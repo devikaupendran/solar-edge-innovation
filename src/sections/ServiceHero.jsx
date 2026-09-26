@@ -9,6 +9,7 @@ import {
     Sun,
     BarChart3,
     ChevronRight,
+    ChevronLeft,
     Home,
     Building2,
     Factory,
@@ -21,6 +22,27 @@ import {
 } from 'lucide-react';
 
 export default function ServiceHero() {
+    const [activeSlide, setActiveSlide] = React.useState(0);
+    const carouselRef = React.useRef(null);
+
+    const handleScroll = () => {
+        if (!carouselRef.current) return;
+        const container = carouselRef.current;
+        const scrollPosition = container.scrollLeft;
+        const cardWidth = container.offsetWidth * 0.75;
+        const newIndex = Math.round(scrollPosition / cardWidth);
+        setActiveSlide(Math.min(Math.max(newIndex, 0), 3));
+    };
+
+    const scrollToSlide = (index) => {
+        if (!carouselRef.current) return;
+        const container = carouselRef.current;
+        const cards = container.children;
+        if (cards[index]) {
+            cards[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            setActiveSlide(index);
+        }
+    };
     return (
         <section className="w-full bg-[#FAFCFA] pt-24 sm:pt-28 lg:pt-32 pb-10 sm:pb-14 lg:pb-16 relative overflow-hidden font-sans">
             {/* =========================================================
@@ -34,79 +56,6 @@ export default function ServiceHero() {
 
 
             <div className="max-w-7xl xl:max-w-[1380px] 2xl:max-w-[1460px] mx-auto px-6 sm:px-10 lg:px-16 xl:px-20 relative z-10">
-
-                {/* =========================================================
-                    FEATURE BAR (ASSURANCE BANNER) PLACED AT THE VERY TOP
-                ========================================================= */}
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="mb-10 sm:mb-14 lg:mb-16 bg-gradient-to-r from-[#0E361D] via-[#144A29] to-[#0A2A17] text-white rounded-3xl sm:rounded-[36px] p-6 sm:p-8 lg:p-9 shadow-2xl border border-emerald-700/40 relative overflow-hidden"
-                >
-                    {/* Ambient Background Glows */}
-                    <div className="absolute -top-12 -right-12 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
-                    <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-0 divide-y sm:divide-y-0 lg:divide-x divide-white/15 relative z-10">
-                        
-                        {/* 1. 10+ Year Warranty */}
-                        <div className="flex items-center gap-3.5 lg:justify-center pt-4 sm:pt-0 lg:px-4 group cursor-pointer">
-                            <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-amber-300 shrink-0 shadow-md group-hover:scale-110 transition-transform">
-                                <Award className="w-6 h-6 text-amber-300" />
-                            </div>
-                            <div>
-                                <div className="text-base font-extrabold text-white leading-tight">10+ Year</div>
-                                <div className="text-xs text-emerald-200/90 font-medium">Warranty</div>
-                            </div>
-                        </div>
-
-                        {/* 2. 27-Year Production Guarantee */}
-                        <div className="flex items-center gap-3.5 lg:justify-center pt-4 sm:pt-0 lg:px-4 group cursor-pointer">
-                            <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-emerald-300 shrink-0 shadow-md group-hover:scale-110 transition-transform">
-                                <ShieldCheck className="w-6 h-6 text-emerald-300" />
-                            </div>
-                            <div>
-                                <div className="text-base font-extrabold text-white leading-tight">27-Year</div>
-                                <div className="text-xs text-emerald-200/90 font-medium">Production Guarantee</div>
-                            </div>
-                        </div>
-
-                        {/* 3. Fast Loan Approval */}
-                        <div className="flex items-center gap-3.5 lg:justify-center pt-4 sm:pt-0 lg:px-4 group cursor-pointer">
-                            <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-emerald-300 shrink-0 shadow-md group-hover:scale-110 transition-transform">
-                                <FileText className="w-6 h-6 text-emerald-300" />
-                            </div>
-                            <div>
-                                <div className="text-base font-extrabold text-white leading-tight">Fast Loan</div>
-                                <div className="text-xs text-emerald-200/90 font-medium">Approval</div>
-                            </div>
-                        </div>
-
-                        {/* 4. Govt. Subsidy Available */}
-                        <div className="flex items-center gap-3.5 lg:justify-center pt-4 sm:pt-0 lg:px-4 group cursor-pointer">
-                            <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-amber-300 shrink-0 shadow-md group-hover:scale-110 transition-transform">
-                                <Percent className="w-6 h-6 text-amber-300" />
-                            </div>
-                            <div>
-                                <div className="text-base font-extrabold text-white leading-tight">Govt. Subsidy</div>
-                                <div className="text-xs text-emerald-200/90 font-medium">Available</div>
-                            </div>
-                        </div>
-
-                        {/* 5. Eco Friendly & Sustainable */}
-                        <div className="flex items-center gap-3.5 lg:justify-center pt-4 sm:pt-0 lg:px-4 group cursor-pointer">
-                            <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-emerald-300 shrink-0 shadow-md group-hover:scale-110 transition-transform">
-                                <Globe className="w-6 h-6 text-emerald-300" />
-                            </div>
-                            <div>
-                                <div className="text-base font-extrabold text-white leading-tight">Eco Friendly</div>
-                                <div className="text-xs text-emerald-200/90 font-medium">& Sustainable</div>
-                            </div>
-                        </div>
-
-                    </div>
-                </motion.div>
 
                 {/* =========================================================
                     HERO SECTION: TWO-COLUMN BANNER
@@ -200,11 +149,11 @@ export default function ServiceHero() {
                             />
                         </div>
 
-                        {/* Floating Badge 1: Clean Energy (Top Left overlay) */}
+                        {/* Floating Badge 1: Clean Energy (Top Left overlay - Hidden on mobile) */}
                         <motion.div
                             animate={{ y: [-3, 3, -3] }}
                             transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut" }}
-                            className="absolute top-4 sm:top-6 left-2 sm:left-4 z-20 bg-white/95 backdrop-blur-md rounded-2xl p-3 sm:p-3.5 shadow-xl border border-neutral-100 flex items-center gap-3"
+                            className="hidden sm:flex absolute top-4 sm:top-6 left-2 sm:left-4 z-20 bg-white/95 backdrop-blur-md rounded-2xl p-3 sm:p-3.5 shadow-xl border border-neutral-100 items-center gap-3"
                         >
                             <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
                                 <Sun className="w-5 h-5 fill-amber-400 text-amber-500" />
@@ -220,11 +169,11 @@ export default function ServiceHero() {
                             </svg>
                         </motion.div>
 
-                        {/* Floating Badge 2: Reduce Electricity Bills (Right overlay) */}
+                        {/* Floating Badge 2: Reduce Electricity Bills (Right overlay - Hidden on mobile) */}
                         <motion.div
                             animate={{ y: [3, -3, 3] }}
                             transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.3 }}
-                            className="absolute top-1/2 -translate-y-1/2 -right-2 sm:-right-4 z-20 bg-white/95 backdrop-blur-md rounded-2xl p-3 sm:p-4 shadow-xl border border-neutral-100 flex items-center gap-3 max-w-[210px] sm:max-w-[230px]"
+                            className="hidden sm:flex absolute top-1/2 -translate-y-1/2 -right-2 sm:-right-4 z-20 bg-white/95 backdrop-blur-md rounded-2xl p-3 sm:p-4 shadow-xl border border-neutral-100 items-center gap-3 max-w-[210px] sm:max-w-[230px]"
                         >
                             <div className="w-10 h-10 rounded-xl bg-[#E5F5E8] flex items-center justify-center text-[#1A4D2E] shrink-0">
                                 <BarChart3 className="w-5 h-5 text-[#1A4D2E]" />
@@ -242,11 +191,85 @@ export default function ServiceHero() {
                 </div>
 
                 {/* =========================================================
+                    FEATURE BAR (ASSURANCE BANNER) PLACED BELOW HERO
+                ========================================================= */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="mt-12 sm:mt-16 lg:mt-20 bg-gradient-to-r from-[#0E361D] via-[#144A29] to-[#0A2A17] text-white rounded-3xl sm:rounded-[36px] p-5 sm:p-8 lg:p-9 shadow-2xl border border-emerald-700/40 relative overflow-hidden"
+                >
+                    {/* Ambient Background Glows */}
+                    <div className="absolute -top-12 -right-12 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-5 sm:gap-6 lg:gap-0 lg:divide-x divide-white/15 relative z-10">
+                        
+                        {/* 1. 10+ Year Warranty */}
+                        <div className="bg-white/10 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none rounded-2xl sm:rounded-none p-3 sm:p-0 border border-white/15 sm:border-none flex items-center gap-3 lg:justify-center lg:px-4 group cursor-pointer">
+                            <div className="w-10 h-10 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-amber-300 shrink-0 shadow-md group-hover:scale-110 transition-transform">
+                                <Award className="w-5 h-5 sm:w-6 sm:h-6 text-amber-300" />
+                            </div>
+                            <div>
+                                <div className="text-sm sm:text-base font-extrabold text-white leading-tight">10+ Year</div>
+                                <div className="text-[11px] sm:text-xs text-emerald-200/90 font-medium">Warranty</div>
+                            </div>
+                        </div>
+
+                        {/* 2. 27-Year Production Guarantee */}
+                        <div className="bg-white/10 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none rounded-2xl sm:rounded-none p-3 sm:p-0 border border-white/15 sm:border-none flex items-center gap-3 lg:justify-center lg:px-4 group cursor-pointer">
+                            <div className="w-10 h-10 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-emerald-300 shrink-0 shadow-md group-hover:scale-110 transition-transform">
+                                <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-300" />
+                            </div>
+                            <div>
+                                <div className="text-sm sm:text-base font-extrabold text-white leading-tight">27-Year</div>
+                                <div className="text-[11px] sm:text-xs text-emerald-200/90 font-medium">Production Guarantee</div>
+                            </div>
+                        </div>
+
+                        {/* 3. Fast Loan Approval */}
+                        <div className="bg-white/10 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none rounded-2xl sm:rounded-none p-3 sm:p-0 border border-white/15 sm:border-none flex items-center gap-3 lg:justify-center lg:px-4 group cursor-pointer">
+                            <div className="w-10 h-10 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-emerald-300 shrink-0 shadow-md group-hover:scale-110 transition-transform">
+                                <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-300" />
+                            </div>
+                            <div>
+                                <div className="text-sm sm:text-base font-extrabold text-white leading-tight">Fast Loan</div>
+                                <div className="text-[11px] sm:text-xs text-emerald-200/90 font-medium">Approval</div>
+                            </div>
+                        </div>
+
+                        {/* 4. Govt. Subsidy Available */}
+                        <div className="bg-white/10 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none rounded-2xl sm:rounded-none p-3 sm:p-0 border border-white/15 sm:border-none flex items-center gap-3 lg:justify-center lg:px-4 group cursor-pointer">
+                            <div className="w-10 h-10 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-amber-300 shrink-0 shadow-md group-hover:scale-110 transition-transform">
+                                <Percent className="w-5 h-5 sm:w-6 sm:h-6 text-amber-300" />
+                            </div>
+                            <div>
+                                <div className="text-sm sm:text-base font-extrabold text-white leading-tight">Govt. Subsidy</div>
+                                <div className="text-[11px] sm:text-xs text-emerald-200/90 font-medium">Available</div>
+                            </div>
+                        </div>
+
+                        {/* 5. Eco Friendly & Sustainable (Centered Full Width on Mobile) */}
+                        <div className="col-span-2 sm:col-span-1 bg-white/10 sm:bg-transparent backdrop-blur-md sm:backdrop-blur-none rounded-2xl sm:rounded-none p-3 sm:p-0 border border-white/15 sm:border-none flex items-center justify-center sm:justify-start lg:justify-center gap-3 lg:px-4 group cursor-pointer">
+                            <div className="w-10 h-10 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-emerald-300 shrink-0 shadow-md group-hover:scale-110 transition-transform">
+                                <Globe className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-300" />
+                            </div>
+                            <div>
+                                <div className="text-sm sm:text-base font-extrabold text-white leading-tight">Eco Friendly</div>
+                                <div className="text-[11px] sm:text-xs text-emerald-200/90 font-medium">& Sustainable</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </motion.div>
+
+                {/* =========================================================
                     THIRD SECTION: SERVICES WE OFFER (4 CARDS GRID)
                 ========================================================= */}
                 <div className="mt-16 sm:mt-20 lg:mt-24">
 
-                    {/* Header Row */}
+                    {/* Header Row with Carousel Navigation Controls */}
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 sm:mb-10">
                         <div>
                             <div className="flex items-center gap-2.5 mb-2">
@@ -264,25 +287,58 @@ export default function ServiceHero() {
                             We deliver comprehensive solar solutions designed for residential, commercial, and industrial needs.
                         </p>
 
-                        <div>
+                        {/* Carousel Action Buttons & Navigation Controls */}
+                        <div className="flex items-center gap-3">
                             <a
                                 href="#types-of-solars"
                                 className="inline-flex items-center gap-2 bg-white hover:bg-neutral-50 border border-neutral-200/90 rounded-full px-5 py-2.5 text-xs font-bold text-neutral-800 shadow-2xs hover:shadow-sm transition-all"
                             >
-                                Explore All Services
+                                Explore All
                                 <ChevronRight className="w-4 h-4 text-[#1A4D2E]" />
                             </a>
+
+                            {/* Left & Right Arrow Buttons */}
+                            <div className="flex items-center gap-1.5 ml-1">
+                                <button
+                                    onClick={() => scrollToSlide(Math.max(0, activeSlide - 1))}
+                                    disabled={activeSlide === 0}
+                                    className={`w-9 h-9 rounded-full border border-neutral-200 flex items-center justify-center transition-all ${
+                                        activeSlide === 0
+                                            ? 'opacity-40 cursor-not-allowed bg-neutral-100 text-neutral-400'
+                                            : 'bg-white hover:bg-[#1A4D2E] hover:text-white hover:border-[#1A4D2E] text-neutral-800 shadow-2xs'
+                                    }`}
+                                    aria-label="Previous service card"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => scrollToSlide(Math.min(3, activeSlide + 1))}
+                                    disabled={activeSlide === 3}
+                                    className={`w-9 h-9 rounded-full border border-neutral-200 flex items-center justify-center transition-all ${
+                                        activeSlide === 3
+                                            ? 'opacity-40 cursor-not-allowed bg-neutral-100 text-neutral-400'
+                                            : 'bg-white hover:bg-[#1A4D2E] hover:text-white hover:border-[#1A4D2E] text-neutral-800 shadow-2xs'
+                                    }`}
+                                    aria-label="Next service card"
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    {/* 4 Premium Cards Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {/* 4 Premium Cards: Swipeable Horizontal Carousel View on Mobile, Grid on Desktop */}
+                    <div
+                        ref={carouselRef}
+                        onScroll={handleScroll}
+                        className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none pb-6 -mx-6 px-6 gap-5 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-6 sm:overflow-visible sm:px-0 sm:mx-0 sm:pb-0 touch-pan-x"
+                    >
 
                         {/* Card 1: Residential Solar Solutions (Highlighted Featured Card) */}
                         <motion.div
                             whileHover={{ y: -8 }}
                             transition={{ duration: 0.3 }}
-                            className="bg-gradient-to-b from-[#F2F8F4] to-white border-2 border-[#1A4D2E] rounded-3xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
+                            className="w-[84vw] max-w-[320px] sm:w-auto shrink-0 snap-center bg-gradient-to-b from-[#F2F8F4] to-white border-2 border-[#1A4D2E] rounded-3xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
                         >
                             {/* Top Badge */}
                             <div className="absolute top-4 right-4 z-20">
@@ -336,7 +392,7 @@ export default function ServiceHero() {
                         <motion.div
                             whileHover={{ y: -8 }}
                             transition={{ duration: 0.3 }}
-                            className="bg-white border border-neutral-200/90 rounded-3xl p-5 shadow-2xs hover:shadow-xl hover:border-emerald-200 transition-all duration-300 flex flex-col justify-between group"
+                            className="w-[84vw] max-w-[320px] sm:w-auto shrink-0 snap-center bg-white border border-neutral-200/90 rounded-3xl p-5 shadow-2xs hover:shadow-xl hover:border-emerald-200 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
                         >
                             {/* Top Badge */}
                             <div className="absolute top-4 right-4 z-20">
@@ -388,7 +444,7 @@ export default function ServiceHero() {
                         <motion.div
                             whileHover={{ y: -8 }}
                             transition={{ duration: 0.3 }}
-                            className="bg-white border border-neutral-200/90 rounded-3xl p-5 shadow-2xs hover:shadow-xl hover:border-emerald-200 transition-all duration-300 flex flex-col justify-between group"
+                            className="w-[84vw] max-w-[320px] sm:w-auto shrink-0 snap-center bg-white border border-neutral-200/90 rounded-3xl p-5 shadow-2xs hover:shadow-xl hover:border-emerald-200 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
                         >
                             {/* Top Badge */}
                             <div className="absolute top-4 right-4 z-20">
@@ -440,7 +496,7 @@ export default function ServiceHero() {
                         <motion.div
                             whileHover={{ y: -8 }}
                             transition={{ duration: 0.3 }}
-                            className="bg-white border border-neutral-200/90 rounded-3xl p-5 shadow-2xs hover:shadow-xl hover:border-emerald-200 transition-all duration-300 flex flex-col justify-between group"
+                            className="w-[84vw] max-w-[320px] sm:w-auto shrink-0 snap-center bg-white border border-neutral-200/90 rounded-3xl p-5 shadow-2xs hover:shadow-xl hover:border-emerald-200 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
                         >
                             {/* Top Badge */}
                             <div className="absolute top-4 right-4 z-20">
@@ -488,6 +544,22 @@ export default function ServiceHero() {
                             </div>
                         </motion.div>
 
+                    </div>
+
+                    {/* Interactive Carousel Pagination Dots */}
+                    <div className="flex items-center justify-center gap-2 mt-6">
+                        {[0, 1, 2, 3].map((idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => scrollToSlide(idx)}
+                                className={`transition-all duration-300 rounded-full ${
+                                    activeSlide === idx
+                                        ? 'w-7 h-2.5 bg-[#1A4D2E]'
+                                        : 'w-2.5 h-2.5 bg-neutral-300 hover:bg-neutral-400'
+                                }`}
+                                aria-label={`Go to slide ${idx + 1}`}
+                            />
+                        ))}
                     </div>
                 </div>
 

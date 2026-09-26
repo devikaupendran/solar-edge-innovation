@@ -53,6 +53,14 @@ body::-webkit-scrollbar {
     background-color: #ffffff;
   }
 } */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 .marquee {
   animation: marquee 20s linear infinite;
 }
