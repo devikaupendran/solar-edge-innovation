@@ -10,6 +10,8 @@ import solarInverter from '../assets/Home-page-images/solar-inverter.svg'
 import solarPanel from '../assets/Home-page-images/solar-panel.svg'
 
 import JoseJo from '../assets/jose-jo.png'
+import joseJoNoBg from '../assets/jose-jo-no-bg.png'
+import aboutImage from '../assets/about-image.png'
 
 import one from '../assets/Home-page-images/1.jpg'
 import two from '../assets/Home-page-images/3.jpg'
@@ -38,6 +40,7 @@ import aboutHeader from '../assets/about-us/about-header.jpg'
 import mission from '../assets/about-us/mission.svg'
 import vision from '../assets/about-us/vision.svg'
 import values from '../assets/about-us/values.svg'
+import aboutusBannerImage from '../assets/aboutus-banner-image.png'
 
 import batteryStorageSolution from '../assets/about-us/battery-storage-solution.svg'
 import solarInverterInstallation from '../assets/about-us/solar-inverter-installation.svg'
@@ -67,6 +70,10 @@ import microInverter from '../assets/service/micro-inverter.png'
 import nvrDvr from '../assets/service/nvr-dvr.png'
 import cctvImage from '../assets/service/CCTV-Camera.png'
 
+import leftSideLeaf from '../assets/left-side-leaf.png'
+import rightSideLeaf from '../assets/right-side-leaf.png'
+import serviceBannerImage from '../assets/service-banner-image.png'
+
 export const assets = {
     logo,
     headerImage,
@@ -85,8 +92,13 @@ export const assets = {
     mission, values, vision,
     mapSvg,
     transparentbackground,
-    bg, solar,JoseJo
-
+    bg, solar, JoseJo,
+    aboutusBannerImage,
+    joseJoNoBg,
+    aboutImage,
+    leftSideLeaf,
+    rightSideLeaf,
+    serviceBannerImage
 };
 // ----------------- assurance icons -----------------
 export const assuranceIcons = [

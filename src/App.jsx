@@ -9,7 +9,7 @@ import { Footer } from './components/Footer';
 import RotatingRings from './utils/RotatingRings';
 import ProjectDetails from './pages/ProjectDetails';
 import Lenis from 'lenis';
-import PrivacyPolicy from './pages/PrivacyPolicy';
+import PrivacyPolicy from './pages/LegalPrivacy';
 import TermsOfService from './pages/TermsOfService';
 
 const ScrollToTop = () => {
