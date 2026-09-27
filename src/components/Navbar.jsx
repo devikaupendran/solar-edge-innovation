@@ -40,19 +40,19 @@ export default function Navbar() {
     <>
       {/* --- DESKTOP NAVBAR --- */}
       <div className="fixed top-0 left-0 w-full hidden md:flex justify-center z-50 p-4 pointer-events-none">
-        <nav className="relative pointer-events-auto flex justify-between items-center transition-all duration-500 ease-in-out bg-white border border-neutral-100 rounded-full px-6 py-2 shadow-[0_12px_30px_rgba(0,0,0,0.06)] w-full max-w-2xl overflow-hidden">
+        <nav className="relative pointer-events-auto flex justify-between items-center transition-all duration-500 ease-in-out bg-white/95 backdrop-blur-md border border-neutral-100/80 rounded-full px-6 py-2.5 shadow-[0_12px_30px_rgba(0,0,0,0.08)] w-full max-w-3xl">
           
           {/* Left Side: Logo */}
-          <NavLink to="/" className="relative z-10 flex items-center overflow-hidden h-9">
+          <NavLink to="/" className="relative z-10 flex items-center shrink-0">
             <img
               src={assets.logo}
               alt="Solar Edge Logo"
-              className="h-8 w-auto object-contain transition-all hover:scale-105"
+              className="h-14 md:h-16 w-auto object-contain transition-all hover:scale-105"
             />
           </NavLink>
 
           {/* Navigation Links */}
-          <ul className="relative z-10 flex items-center gap-1.5 text-[10px] font-bold tracking-widest font-sans uppercase">
+          <ul className="relative z-10 flex items-center gap-2 text-[11px] font-bold tracking-widest font-sans uppercase">
             {desktopLinks.map((link) => {
               const isActive = activePage === link.id;
               return (
@@ -80,11 +80,11 @@ export default function Navbar() {
           {/* Right Side: CTA */}
           <a
             href="mailto:solaredgeinnovations25@gmail.com"
-            className="relative z-10 inline-flex items-center gap-2 bg-green-950 text-white rounded-full font-medium transition-all group hover:bg-green-900 pl-3.5 pr-1 py-1 text-xs"
+            className="relative z-10 inline-flex items-center gap-2 bg-green-950 text-white rounded-full font-medium transition-all group hover:bg-green-900 pl-4 pr-1.5 py-1.5 text-xs shrink-0"
           >
             Get in touch
             <span className="bg-white text-green-950 rounded-full transition-transform group-hover:translate-x-0.5 p-1 flex items-center justify-center">
-              <FiChevronRight size={10} />
+              <FiChevronRight size={12} />
             </span>
           </a>
         </nav>

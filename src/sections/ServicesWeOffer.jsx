@@ -65,8 +65,8 @@ export default function ServicesWeOffer() {
                             <ChevronRight className="w-4 h-4 text-[#1A4D2E]" />
                         </a>
 
-                        {/* Left & Right Arrow Buttons (Visible on Mobile Carousel, Hidden on Desktop Grid) */}
-                        <div className="flex sm:hidden items-center gap-1.5 ml-1">
+                        {/* Left & Right Arrow Buttons (Visible on Mobile & Tablet Carousel, Hidden on Desktop Grid) */}
+                        <div className="flex lg:hidden items-center gap-1.5 ml-1">
                             <button
                                 onClick={() => scrollToSlide(Math.max(0, activeSlide - 1))}
                                 disabled={activeSlide === 0}
@@ -95,18 +95,18 @@ export default function ServicesWeOffer() {
                     </div>
                 </div>
 
-                {/* 4 Premium Cards: Swipeable Horizontal Carousel View on Mobile, Grid on Desktop */}
+                {/* 4 Premium Cards: Swipeable Horizontal Carousel View on Mobile & Tablet, Grid on Desktop */}
                 <div
                     ref={carouselRef}
                     onScroll={handleScroll}
-                    className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none pb-6 -mx-6 px-6 gap-5 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-6 sm:overflow-visible sm:px-0 sm:mx-0 sm:pb-0 touch-pan-x"
+                    className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none pb-6 -mx-6 px-6 sm:-mx-10 sm:px-10 lg:px-0 lg:mx-0 gap-5 sm:gap-6 lg:grid lg:grid-cols-4 lg:overflow-visible lg:pb-0 touch-pan-x"
                 >
 
                     {/* Card 1: Residential Solar Solutions */}
                     <motion.div
                         whileHover={{ y: -8 }}
                         transition={{ duration: 0.3 }}
-                        className="w-[84vw] max-w-[320px] sm:w-auto shrink-0 snap-center bg-gradient-to-b from-[#F2F8F4] to-white border-2 border-[#1A4D2E] rounded-3xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
+                        className="w-[84vw] max-w-[320px] sm:w-[330px] md:w-[350px] lg:w-auto shrink-0 snap-center bg-gradient-to-b from-[#F2F8F4] to-white border-2 border-[#1A4D2E] rounded-3xl p-5 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
                     >
                         {/* Top Badge */}
                         <div className="absolute top-4 right-4 z-20">
@@ -160,7 +160,7 @@ export default function ServicesWeOffer() {
                     <motion.div
                         whileHover={{ y: -8 }}
                         transition={{ duration: 0.3 }}
-                        className="w-[84vw] max-w-[320px] sm:w-auto shrink-0 snap-center bg-white border border-neutral-200/90 rounded-3xl p-5 shadow-2xs hover:shadow-xl hover:border-emerald-200 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
+                        className="w-[84vw] max-w-[320px] sm:w-[330px] md:w-[350px] lg:w-auto shrink-0 snap-center bg-white border border-neutral-200/90 rounded-3xl p-5 shadow-2xs hover:shadow-xl hover:border-emerald-200 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
                     >
                         {/* Top Badge */}
                         <div className="absolute top-4 right-4 z-20">
@@ -212,7 +212,7 @@ export default function ServicesWeOffer() {
                     <motion.div
                         whileHover={{ y: -8 }}
                         transition={{ duration: 0.3 }}
-                        className="w-[84vw] max-w-[320px] sm:w-auto shrink-0 snap-center bg-white border border-neutral-200/90 rounded-3xl p-5 shadow-2xs hover:shadow-xl hover:border-emerald-200 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
+                        className="w-[84vw] max-w-[320px] sm:w-[330px] md:w-[350px] lg:w-auto shrink-0 snap-center bg-white border border-neutral-200/90 rounded-3xl p-5 shadow-2xs hover:shadow-xl hover:border-emerald-200 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
                     >
                         {/* Top Badge */}
                         <div className="absolute top-4 right-4 z-20">
@@ -264,7 +264,7 @@ export default function ServicesWeOffer() {
                     <motion.div
                         whileHover={{ y: -8 }}
                         transition={{ duration: 0.3 }}
-                        className="w-[84vw] max-w-[320px] sm:w-auto shrink-0 snap-center bg-white border border-neutral-200/90 rounded-3xl p-5 shadow-2xs hover:shadow-xl hover:border-emerald-200 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
+                        className="w-[84vw] max-w-[320px] sm:w-[330px] md:w-[350px] lg:w-auto shrink-0 snap-center bg-white border border-neutral-200/90 rounded-3xl p-5 shadow-2xs hover:shadow-xl hover:border-emerald-200 transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
                     >
                         {/* Top Badge */}
                         <div className="absolute top-4 right-4 z-20">
@@ -314,8 +314,8 @@ export default function ServicesWeOffer() {
 
                 </div>
 
-                {/* Interactive Carousel Pagination Dots (Visible on Mobile Carousel, Hidden on Desktop Grid) */}
-                <div className="flex sm:hidden items-center justify-center gap-2 mt-6">
+                {/* Interactive Carousel Pagination Dots (Visible on Mobile & Tablet Carousel, Hidden on Desktop Grid) */}
+                <div className="flex lg:hidden items-center justify-center gap-2 mt-6">
                     {[0, 1, 2, 3].map((idx) => (
                         <button
                             key={idx}

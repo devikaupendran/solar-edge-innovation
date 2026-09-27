@@ -84,13 +84,7 @@ import galleryImg2 from '../assets/project-gallery-images/image-2.png'
 import galleryImg3 from '../assets/project-gallery-images/image-3.png'
 import galleryImg4 from '../assets/project-gallery-images/image-4.png'
 import galleryImg5 from '../assets/project-gallery-images/image-5.png'
-import galleryImg6 from '../assets/project-gallery-images/image-6.png'
 import galleryImg7 from '../assets/project-gallery-images/image-7.png'
-import galleryImg8 from '../assets/project-gallery-images/image-8.png'
-import galleryImg10 from '../assets/project-gallery-images/image-10.png'
-import galleryImg11 from '../assets/project-gallery-images/image-11.png'
-import galleryImg12 from '../assets/project-gallery-images/image-12.png'
-import galleryImg13 from '../assets/project-gallery-images/image-13.png'
 
 export const projectGalleryImages = [
     { id: 1, src: galleryImg1, title: 'Solar Panel Rooftop Installation', location: 'Trivandrum' },
@@ -98,13 +92,7 @@ export const projectGalleryImages = [
     { id: 3, src: galleryImg3, title: 'Hybrid Solar & Battery Backup', location: 'Varkala' },
     { id: 4, src: galleryImg4, title: 'Industrial Solar Infrastructure', location: 'Parippally' },
     { id: 5, src: galleryImg5, title: 'On-Grid Solar Energy Project', location: 'Elakamon' },
-    { id: 6, src: galleryImg6, title: 'Solar Inverter & Power Setup', location: 'Attingal' },
-    { id: 7, src: galleryImg7, title: 'Residential Solar Installation', location: 'Paravur' },
-    { id: 8, src: galleryImg8, title: 'Commercial Energy Storage Array', location: 'Kallambalam' },
-    { id: 9, src: galleryImg10, title: 'High-Capacity Solar Grid Setup', location: 'Ayroor' },
-    { id: 10, src: galleryImg11, title: 'Solar Power & CCTV Network', location: 'Onninmoodu' },
-    { id: 11, src: galleryImg12, title: 'Custom Rooftop Solar Installation', location: 'Pathanamthitta' },
-    { id: 12, src: galleryImg13, title: 'Advanced Solar Solution', location: 'Kerala' }
+    { id: 6, src: galleryImg7, title: 'Residential Solar Installation', location: 'Paravur' },
 ];
 
 export const assets = {
@@ -209,8 +197,8 @@ export const providersLogo = [
     },
     {
         img: exideLogo,
-        height:'',
-        width:''
+        height: '',
+        width: ''
     }
 
 ]
@@ -284,7 +272,7 @@ export const typesOfInverter = [
         point1: 'Efficiently connects solar power to the utility grid.',
         point2: 'Reduces electricity bills through net metering.',
         image: onGridInverter,
-        classes:'w-60 h-85 max-w-sm'
+        classes: 'w-60 h-85 max-w-sm'
     },
     {
         id: 2,
@@ -293,7 +281,7 @@ export const typesOfInverter = [
         point1: 'Provides backup power during outages.',
         point2: 'Maximizes solar usage by storing excess energy',
         image: hybridInverter,
-        classes:'w-60 h-85 max-w-sm'
+        classes: 'w-60 h-85 max-w-sm'
     },
     {
         id: 3,
@@ -302,30 +290,30 @@ export const typesOfInverter = [
         point1: 'Improves system efficiency by managing each panel individually.',
         point2: 'Enhances safety with lower DC voltage on rooftops.',
         image: microInverter,
-        classes:'w-80 h-85 max-w-sm'
+        classes: 'w-80 h-85 max-w-sm'
     },
 ]
 // ----------------- types of cctvCamera data -----------------
 export const typesOfCctvs = [
-   {
-      id: 1,
-      heading: "CCTV Cameras",
-      description: "High-definition cameras for surveillance and security monitoring.",
-      point1: "Indoor and outdoor options",
-      point2: "Night vision support",
-      point3: "Remote monitoring via app",
-      image: cctvImage,
-      classes: "w-80 h-auto object-contain"
-   },
-   {
-      id: 2,
-      heading: "NVR and DVR",
-      description: "Network and Digital Video Recorders for storing and managing footage.",
-      point1: "Supports multiple cameras",
-      point2: "Easy playback and export",
-      point3: "24/7 recording support",
-      image: nvrDvr,
-      classes: "w-80 h-auto object-contain"
-   },
+    {
+        id: 1,
+        heading: "CCTV Cameras",
+        description: "High-definition cameras for surveillance and security monitoring.",
+        point1: "Indoor and outdoor options",
+        point2: "Night vision support",
+        point3: "Remote monitoring via app",
+        image: cctvImage,
+        classes: "w-80 h-auto object-contain"
+    },
+    {
+        id: 2,
+        heading: "NVR and DVR",
+        description: "Network and Digital Video Recorders for storing and managing footage.",
+        point1: "Supports multiple cameras",
+        point2: "Easy playback and export",
+        point3: "24/7 recording support",
+        image: nvrDvr,
+        classes: "w-80 h-auto object-contain"
+    },
 ];
 // ----------------- project images and data -----------------

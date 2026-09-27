@@ -198,26 +198,23 @@ export default function SolarShowcase() {
             {/* ══════════════════════════════════════════════
                 DESKTOP LAYOUT  (hidden on mobile)
             ══════════════════════════════════════════════ */}
-            <div className="hidden md:flex w-full h-screen bg-white text-neutral-900 font-sans pt-24 pb-4 px-8 md:px-16 lg:px-20 items-center justify-center relative overflow-hidden">
+            <div className="hidden md:flex w-full min-h-screen bg-white text-neutral-900 font-sans pt-36 md:pt-44 lg:pt-40 pb-8 px-8 md:px-16 lg:px-20 items-center justify-center relative overflow-hidden">
 
-                {/* Background watermark */}
-                <div className="absolute inset-x-0 top-0 flex items-start justify-center opacity-[0.07] pointer-events-none select-none text-green-900 z-0 overflow-hidden pt-24">
+                {/* Background watermark text */}
+                <div className="absolute inset-x-0 top-44 md:top-48 lg:top-36 flex items-center justify-center opacity-[0.05] pointer-events-none select-none text-green-950 z-0 overflow-hidden">
                     <AnimatePresence mode="wait">
                         <motion.span
                             key={activeTab}
-                            initial={{ opacity: 0, y: 15 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -15 }}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 1.05 }}
                             transition={{ duration: 0.4 }}
-                            className="text-[11rem] lg:text-[14rem] xl:text-[17rem] font-serif font-black tracking-wide uppercase whitespace-nowrap text-center w-full select-none"
+                            className="text-[6rem] md:text-[9rem] lg:text-[14rem] xl:text-[18rem] font-sans font-black tracking-tighter uppercase whitespace-nowrap text-center w-full select-none leading-none"
                         >
                             {activeTab}
                         </motion.span>
                     </AnimatePresence>
                 </div>
-
-                {/* Corner logo watermark */}
-                <img src={logoImg} alt="Watermark Logo" className="absolute top-28 right-12 w-46 h-auto opacity-[0.25] pointer-events-none select-none z-0" />
 
                 <div className="max-w-7xl w-full relative z-10">
 
@@ -242,10 +239,10 @@ export default function SolarShowcase() {
                     </div>
 
                     {/* 3-col grid */}
-                    <div className="grid grid-cols-12 gap-4 items-start relative z-10">
+                    <div className="grid grid-cols-12 gap-4 items-center relative z-10">
 
                         {/* Left: vertical tabs + stamp */}
-                        <div className="col-span-3 flex flex-col justify-start z-10 self-start pt-12">
+                        <div className="col-span-3 flex flex-col justify-start z-10 self-start pt-6">
                             <TabButtons vertical />
 
                             <div className="relative mt-8 flex items-center justify-start">
@@ -258,8 +255,8 @@ export default function SolarShowcase() {
                         </div>
 
                         {/* Center: product image */}
-                        <div className="col-span-6 relative h-[420px] flex items-center justify-center">
-                            <ProductImage maxW="max-w-[520px]" h="h-[400px]" />
+                        <div className="col-span-6 relative h-[480px] lg:h-[530px] flex items-center justify-center">
+                            <ProductImage maxW="max-w-[600px] lg:max-w-[680px]" h="h-[460px] lg:h-[510px]" />
                         </div>
 
                         {/* Right: service portal + brochure */}
@@ -318,18 +315,23 @@ export default function SolarShowcase() {
             {/* ══════════════════════════════════════════════
                 MOBILE LAYOUT  (hidden on desktop)
             ══════════════════════════════════════════════ */}
-            <div className="flex md:hidden w-full h-auto bg-white text-neutral-900 font-sans pt-20 pb-4 px-5 flex-col relative overflow-hidden">
+            <div className="flex md:hidden w-full h-auto bg-white text-neutral-900 font-sans pt-8 sm:pt-10 pb-4 px-5 flex-col relative overflow-hidden">
 
                 {/* Header */}
-                <div className="flex flex-col gap-1 mb-3 z-10">
-                    <div className="flex items-center gap-2">
-                        <h2 className="text-2xl font-bold font-playfair tracking-tight text-neutral-850">Solar Edge Innovations</h2>
-                        <button className="p-1 rounded-full text-neutral-300"><Info className="w-4 h-4" /></button>
+                <div className="flex flex-col gap-1.5 mb-3 z-10">
+                    <div className="flex items-center gap-3.5">
+                        <img src={logoImg} alt="Solar Edge Logo" className="w-14 h-14 sm:w-16 sm:h-16 object-contain shrink-0 filter drop-shadow-xs" />
+                        <div>
+                            <div className="flex items-center gap-1.5">
+                                <h2 className="text-xl sm:text-2xl font-bold font-playfair tracking-tight text-neutral-850">Solar Edge Innovations</h2>
+                                <button className="p-1 rounded-full text-neutral-300"><Info className="w-4 h-4" /></button>
+                            </div>
+                            <motion.p key={activeTab + '-m-sub'} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                                className="text-neutral-400 text-[10px] font-semibold tracking-wide uppercase font-mono mt-0.5">
+                                {currentData.subtitle}
+                            </motion.p>
+                        </div>
                     </div>
-                    <motion.p key={activeTab + '-m-sub'} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                        className="text-neutral-400 text-[10px] font-semibold tracking-wide uppercase font-mono">
-                        {currentData.subtitle}
-                    </motion.p>
                     <motion.p key={activeTab + '-m-desc'} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}
                         className="text-neutral-500 text-xs font-light leading-relaxed mt-1">
                         {currentData.description}
@@ -342,15 +344,15 @@ export default function SolarShowcase() {
                 </div>
 
                 {/* Watermark text below tabs */}
-                <div className="overflow-hidden pointer-events-none select-none -mb-6">
+                <div className="overflow-hidden pointer-events-none select-none -mb-6 opacity-[0.05]">
                     <AnimatePresence mode="wait">
                         <motion.span
                             key={activeTab + '-m-wm'}
                             initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 0.05, y: 0 }}
+                            animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
                             transition={{ duration: 0.35 }}
-                            className="block text-[5rem] font-serif font-black tracking-wide uppercase text-green-900 leading-none"
+                            className="block text-[4.5rem] sm:text-[6.5rem] md:text-[8.5rem] font-sans font-black tracking-tighter uppercase text-green-950 leading-none text-center"
                         >
                             {activeTab}
                         </motion.span>

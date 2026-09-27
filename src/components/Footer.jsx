@@ -26,13 +26,13 @@ export const Footer = () => {
 
                     {/* Column 1: Brand Info */}
                     <div className="lg:col-span-3 space-y-4">
-                        <div className="flex items-center gap-3">
-                            <img src={assets.logo} alt="Solar Edge Logo" className="w-12 h-12 object-contain" />
+                        <div className="flex items-center gap-4">
+                            <img src={assets.logo} alt="Solar Edge Logo" className="w-20 h-20 sm:w-24 sm:h-24 object-contain shrink-0 transition-transform hover:scale-105" />
                             <div>
-                                <h3 className="text-sm font-bold tracking-widest uppercase text-neutral-900 font-mono leading-none">
+                                <h3 className="text-lg sm:text-xl font-bold tracking-widest uppercase text-neutral-900 font-mono leading-tight">
                                     SOLAR EDGE
                                 </h3>
-                                <span className="text-[10px] text-green-700 font-semibold tracking-wider uppercase font-mono">
+                                <span className="text-xs sm:text-sm text-green-700 font-bold tracking-wider uppercase font-mono">
                                     INNOVATION
                                 </span>
                             </div>
