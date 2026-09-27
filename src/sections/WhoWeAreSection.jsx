@@ -91,7 +91,7 @@ export default function WhoWeAreSection() {
                             className="bg-white rounded-[32px] p-8 flex flex-col justify-end h-[170px] shadow-xs border border-neutral-100"
                         >
                             <h2 className="text-5xl font-playfair font-bold text-neutral-900">
-                                150<span className="text-green-600 font-light ml-0.5">+</span>
+                                200<span className="text-green-600 font-light ml-0.5">+</span>
                             </h2>
                             <p className="text-xs font-sans text-neutral-500 tracking-tight font-medium mt-2">Projects Completed</p>
                         </motion.div>
@@ -109,7 +109,7 @@ export default function WhoWeAreSection() {
                             className="bg-white rounded-[32px] p-8 flex flex-col justify-end h-[170px] shadow-xs border border-neutral-100"
                         >
                             <h2 className="text-5xl font-playfair font-bold text-neutral-900">
-                                8<span className="text-green-600 font-light ml-0.5">+</span>
+                                3<span className="text-green-600 font-light ml-0.5">+</span>
                             </h2>
                             <p className="text-xs font-sans text-neutral-500 tracking-tight font-medium mt-2">Years experience</p>
                         </motion.div>
@@ -195,9 +195,9 @@ export default function WhoWeAreSection() {
                             className="bg-white rounded-[32px] p-8 flex flex-col justify-end h-[170px] shadow-xs border border-neutral-100"
                         >
                             <h2 className="text-5xl font-playfair font-bold text-neutral-900">
-                                120<span className="text-green-600 font-light ml-0.5">+</span>
+                                200<span className="text-green-600 font-light ml-0.5">+</span>
                             </h2>
-                            <p className="text-xs font-sans text-neutral-500 tracking-tight font-medium mt-2">Happy customers</p>
+                            <p className="text-xs font-sans text-neutral-500 tracking-tight font-medium mt-2">Happy clients</p>
                         </motion.div>
                     </div>
 

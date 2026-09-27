@@ -70,9 +70,42 @@ import microInverter from '../assets/service/micro-inverter.png'
 import nvrDvr from '../assets/service/nvr-dvr.png'
 import cctvImage from '../assets/service/CCTV-Camera.png'
 
+import residentialSolar from '../assets/service/residential-solar.png'
+import serviceCommercial from '../assets/service/commercial-image.png'
+import serviceIndustrial from '../assets/service/industrial-image.png'
+import serviceMaintenance from '../assets/service/maintenance-img.png'
+
 import leftSideLeaf from '../assets/left-side-leaf.png'
 import rightSideLeaf from '../assets/right-side-leaf.png'
 import serviceBannerImage from '../assets/service-banner-image.png'
+
+import galleryImg1 from '../assets/project-gallery-images/image-1.png'
+import galleryImg2 from '../assets/project-gallery-images/image-2.png'
+import galleryImg3 from '../assets/project-gallery-images/image-3.png'
+import galleryImg4 from '../assets/project-gallery-images/image-4.png'
+import galleryImg5 from '../assets/project-gallery-images/image-5.png'
+import galleryImg6 from '../assets/project-gallery-images/image-6.png'
+import galleryImg7 from '../assets/project-gallery-images/image-7.png'
+import galleryImg8 from '../assets/project-gallery-images/image-8.png'
+import galleryImg10 from '../assets/project-gallery-images/image-10.png'
+import galleryImg11 from '../assets/project-gallery-images/image-11.png'
+import galleryImg12 from '../assets/project-gallery-images/image-12.png'
+import galleryImg13 from '../assets/project-gallery-images/image-13.png'
+
+export const projectGalleryImages = [
+    { id: 1, src: galleryImg1, title: 'Solar Panel Rooftop Installation', location: 'Trivandrum' },
+    { id: 2, src: galleryImg2, title: 'Commercial Solar System Project', location: 'Kollam' },
+    { id: 3, src: galleryImg3, title: 'Hybrid Solar & Battery Backup', location: 'Varkala' },
+    { id: 4, src: galleryImg4, title: 'Industrial Solar Infrastructure', location: 'Parippally' },
+    { id: 5, src: galleryImg5, title: 'On-Grid Solar Energy Project', location: 'Elakamon' },
+    { id: 6, src: galleryImg6, title: 'Solar Inverter & Power Setup', location: 'Attingal' },
+    { id: 7, src: galleryImg7, title: 'Residential Solar Installation', location: 'Paravur' },
+    { id: 8, src: galleryImg8, title: 'Commercial Energy Storage Array', location: 'Kallambalam' },
+    { id: 9, src: galleryImg10, title: 'High-Capacity Solar Grid Setup', location: 'Ayroor' },
+    { id: 10, src: galleryImg11, title: 'Solar Power & CCTV Network', location: 'Onninmoodu' },
+    { id: 11, src: galleryImg12, title: 'Custom Rooftop Solar Installation', location: 'Pathanamthitta' },
+    { id: 12, src: galleryImg13, title: 'Advanced Solar Solution', location: 'Kerala' }
+];
 
 export const assets = {
     logo,
@@ -98,7 +131,11 @@ export const assets = {
     aboutImage,
     leftSideLeaf,
     rightSideLeaf,
-    serviceBannerImage
+    serviceBannerImage,
+    residentialSolar,
+    serviceCommercial,
+    serviceIndustrial,
+    serviceMaintenance
 };
 // ----------------- assurance icons -----------------
 export const assuranceIcons = [

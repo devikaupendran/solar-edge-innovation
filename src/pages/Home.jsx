@@ -10,6 +10,7 @@ import SolarAnimation from '../utils/SolarAnimation'
 import { Helmet } from "react-helmet-async";
 import SolarShowcase from '../sections/SolarShowcase'
 import WhoWeAreSection from '../sections/WhoWeAreSection'
+import ServicesWeOffer from '../sections/ServicesWeOffer'
 import ServiceAreas from '../sections/ServiceAreas'
 
 const Home = () => {
@@ -145,12 +146,13 @@ cctv varkala, cctv elakamon, solar store kollam, solar store trivandrum, solar s
       <div className='bg-[#F8F8FA]'>
         {/* <Header /> */}
         <SolarShowcase />
+        <ServicesWeOffer />
         <WhoWeAreSection />
         {/* <WhoWeAre /> */}
         {/* <EnergyBackupSecurity /> */}
         {/* <SolarAnimation /> */}
         <ProjectShowcase />
-        <CategorySection />
+        {/* <CategorySection /> */}
         <OurProviders />
         <ServiceAreas />
         <GetInTouch />

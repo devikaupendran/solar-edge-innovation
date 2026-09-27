@@ -293,7 +293,7 @@ const AboutUs = () => {
                                     <img
                                         src={assets.aboutusBannerImage}
                                         alt="Solar Edge modern sustainable home"
-                                        className="w-full h-auto object-contain max-w-[1000px] xl:max-w-[1150px] lg:scale-125 xl:scale-130 2xl:scale-145 drop-shadow-2xl transition-transform duration-500 hover:scale-[1.32]"
+                                        className="w-full h-auto object-contain max-w-[1000px] xl:max-w-[1150px] scale-125  drop-shadow-2xl transition-transform duration-500 hover:scale-[1.32]"
                                     />
                                 </div>
 
