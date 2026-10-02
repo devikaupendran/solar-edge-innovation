@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { assets } from '../assets/assets';
 import { motion, AnimatePresence } from 'framer-motion';
-import ContactSection from '../sections/ContactSection';
 import { Helmet } from "react-helmet-async";
 import ProfileCard from '../sections/ProfileCard';
 import { Users, CheckCircle2, Leaf, Star, Zap, X, Target, Eye, ShieldCheck } from 'lucide-react';
@@ -116,7 +115,7 @@ const AboutUs = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.7, ease: "easeOut" }}
-                                className="lg:col-span-5 xl:col-span-5 flex flex-col justify-center z-10"
+                                className="lg:col-span-5 xl:col-span-5 flex flex-col justify-center relative z-20"
                             >
                                 {/* Label / Overline */}
                                 <div className="flex items-center gap-2.5 mb-4 sm:mb-6">
@@ -134,7 +133,7 @@ const AboutUs = () => {
                                 </h1>
 
                                 {/* Description Paragraph */}
-                                <p className="mt-6 text-neutral-600 text-sm sm:text-[15px] leading-relaxed max-w-xl font-sans">
+                                <p className="mt-6 text-neutral-600 text-sm sm:text-[15px] leading-relaxed max-w-lg font-sans">
                                     At Solar Edge Innovations, we are passionate about making clean energy accessible, reliable, and affordable. We design and deliver high-performance solar solutions for homes, businesses, and industries — building a more sustainable future for generations to come.
                                 </p>
 
@@ -288,12 +287,12 @@ const AboutUs = () => {
                                     </div>
                                 </motion.div>
 
-                                {/* House Render Image - MUCH LARGER */}
+                                {/* House Render Image */}
                                 <div className="relative z-10 w-full flex justify-center lg:justify-end pt-4 sm:pt-6">
                                     <img
                                         src={assets.aboutusBannerImage}
                                         alt="Solar Edge modern sustainable home"
-                                        className="w-full h-auto object-contain max-w-[1000px] xl:max-w-[1150px] scale-125  drop-shadow-2xl transition-transform duration-500 hover:scale-[1.32]"
+                                        className="w-full h-auto object-contain max-w-[720px] lg:max-w-[780px] xl:max-w-[880px] scale-100 lg:scale-[1.06] drop-shadow-2xl transition-transform duration-500 hover:scale-[1.09]"
                                     />
                                 </div>
 
@@ -494,8 +493,6 @@ const AboutUs = () => {
                 <div id="our-story">
                     <ProfileCard />
                 </div>
-
-                <ContactSection />
             </div>
 
             {/* Video Story Modal */}

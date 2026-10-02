@@ -11,6 +11,8 @@ import ProjectDetails from './pages/ProjectDetails';
 import Lenis from 'lenis';
 import PrivacyPolicy from './pages/LegalPrivacy';
 import TermsOfService from './pages/TermsOfService';
+import AdminPage from './pages/AdminPage';
+import Contact from './pages/Contact';
 
 const ScrollToTop = () => {
     const { pathname, hash } = useLocation();
@@ -37,6 +39,40 @@ const ScrollToTop = () => {
     }, [pathname, hash]);
 
     return null;
+};
+
+const AppContent = () => {
+    const location = useLocation();
+    const isAdminRoute = location.pathname.startsWith('/admin');
+
+    useEffect(() => {
+        if (window.lenis) {
+            if (isAdminRoute) {
+                window.lenis.stop();
+            } else {
+                window.lenis.start();
+            }
+        }
+    }, [isAdminRoute]);
+
+    return (
+        <>
+            <ScrollToTop />
+            {!isAdminRoute && <Navbar />}
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<AboutUs />} />
+                <Route path="/services" element={<Services />} />
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/projects/:id" element={<ProjectDetails />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/admin" element={<AdminPage />} />
+            </Routes>
+            {!isAdminRoute && <Footer />}
+        </>
+    );
 };
 
 const App = () => {
@@ -76,20 +112,7 @@ const App = () => {
                         <RotatingRings size="xl" message="Loading..." />
                     </div>
                 ) : (
-                    <>
-                        <ScrollToTop />
-                        <Navbar />
-                        <Routes>
-                            <Route path="/" element={<Home />} />
-                            <Route path="/about" element={<AboutUs />} />
-                            <Route path="/services" element={<Services />} />
-                            <Route path="/projects" element={<Projects />} />
-                            <Route path="/projects/:id" element={<ProjectDetails />} />
-                            <Route path="/privacy" element={<PrivacyPolicy />} />
-                            <Route path="/terms" element={<TermsOfService />} />
-                        </Routes>
-                        <Footer />
-                    </>
+                    <AppContent />
                 )
             }
         </>

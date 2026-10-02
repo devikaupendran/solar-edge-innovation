@@ -78,6 +78,11 @@ export const Footer = () => {
                                     Projects
                                 </NavLink>
                             </li>
+                            <li>
+                                <NavLink to="/contact" className={linkClass}>
+                                    Contact Us
+                                </NavLink>
+                            </li>
                         </ul>
                     </div>
 

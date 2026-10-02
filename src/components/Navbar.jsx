@@ -17,6 +17,7 @@ export default function Navbar() {
     if (pathname.startsWith("/about")) return "about";
     if (pathname.startsWith("/services")) return "services";
     if (pathname.startsWith("/projects")) return "projects";
+    if (pathname.startsWith("/contact")) return "contact";
     return "home";
   };
 
@@ -27,20 +28,22 @@ export default function Navbar() {
     { name: "About Us", id: "about", path: "/about" },
     { name: "Services", id: "services", path: "/services" },
     { name: "Projects", id: "projects", path: "/projects" },
+    { name: "Contact", id: "contact", path: "/contact" },
   ];
 
   const mobileLinks = [
-    { name: "Home", id: "home", path: "/", icon: <Home size={18} /> },
-    { name: "About", id: "about", path: "/about", icon: <Info size={18} /> },
-    { name: "Services", id: "services", path: "/services", icon: <Zap size={18} /> },
-    { name: "Projects", id: "projects", path: "/projects", icon: <LayoutGrid size={18} /> },
+    { name: "Home", id: "home", path: "/", icon: <Home size={17} /> },
+    { name: "About", id: "about", path: "/about", icon: <Info size={17} /> },
+    { name: "Services", id: "services", path: "/services", icon: <Zap size={17} /> },
+    { name: "Projects", id: "projects", path: "/projects", icon: <LayoutGrid size={17} /> },
+    { name: "Contact", id: "contact", path: "/contact", icon: <Mail size={17} /> },
   ];
 
   return (
     <>
       {/* --- DESKTOP NAVBAR --- */}
       <div className="fixed top-0 left-0 w-full hidden md:flex justify-center z-50 p-4 pointer-events-none">
-        <nav className="relative pointer-events-auto flex justify-between items-center transition-all duration-500 ease-in-out bg-white/95 backdrop-blur-md border border-neutral-100/80 rounded-full px-6 py-2.5 shadow-[0_12px_30px_rgba(0,0,0,0.08)] w-full max-w-3xl">
+        <nav className="relative pointer-events-auto flex justify-between items-center transition-all duration-500 ease-in-out bg-white/95 backdrop-blur-md border border-neutral-100/80 rounded-full px-6 py-2.5 shadow-[0_12px_30px_rgba(0,0,0,0.08)] w-full max-w-4xl">
           
           {/* Left Side: Logo */}
           <NavLink to="/" className="relative z-10 flex items-center shrink-0">
@@ -78,29 +81,29 @@ export default function Navbar() {
           </ul>
 
           {/* Right Side: CTA */}
-          <a
-            href="mailto:solaredgeinnovations25@gmail.com"
+          <NavLink
+            to="/contact"
             className="relative z-10 inline-flex items-center gap-2 bg-green-950 text-white rounded-full font-medium transition-all group hover:bg-green-900 pl-4 pr-1.5 py-1.5 text-xs shrink-0"
           >
             Get in touch
             <span className="bg-white text-green-950 rounded-full transition-transform group-hover:translate-x-0.5 p-1 flex items-center justify-center">
               <FiChevronRight size={12} />
             </span>
-          </a>
+          </NavLink>
         </nav>
       </div>
 
       {/* --- MOBILE BOTTOM TAB BAR --- */}
-      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 w-[92%] max-w-sm md:hidden pointer-events-auto">
+      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 w-[95%] max-w-md md:hidden pointer-events-auto">
         {/* Main Tab capsule */}
-        <div className="flex-1 bg-[#05180D]/95 backdrop-blur-lg border border-[#0d2e1c]/85 rounded-full py-2 px-2.5 flex items-center justify-around shadow-xl">
+        <div className="flex-1 bg-[#05180D]/95 backdrop-blur-lg border border-[#0d2e1c]/85 rounded-full py-1.5 px-2 flex items-center justify-around shadow-xl">
           {mobileLinks.map((link) => {
             const isActive = activePage === link.id;
             return (
               <NavLink
                 key={link.id}
                 to={link.path}
-                className={`flex flex-col items-center justify-center w-14 h-12 rounded-2xl transition-all duration-300 relative ${
+                className={`flex flex-col items-center justify-center flex-1 py-1 rounded-2xl transition-all duration-300 relative ${
                   isActive ? "text-green-50" : "text-neutral-400 hover:text-green-50"
                 }`}
               >
