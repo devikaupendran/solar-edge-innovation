@@ -21,4 +21,16 @@ export default defineConfig({
     // Compress assets
     assetsInlineLimit: 4096, // inline assets < 4KB as base64
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true
+      },
+      '/uploads': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true
+      }
+    }
+  }
 })

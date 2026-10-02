@@ -1,18 +1,10 @@
+# Pass Authorization header to PHP under Apache / FastCGI on Hostinger
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /
-
-  # Pass Authorization header to PHP / FastCGI on Apache / Hostinger
   RewriteCond %{HTTP:Authorization} .
   RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-
-  RewriteRule ^index\.html$ - [L]
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule . /index.html [L]
 </IfModule>
 
 <IfModule mod_setenvif.c>
   SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 </IfModule>
-

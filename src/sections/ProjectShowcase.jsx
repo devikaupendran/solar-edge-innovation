@@ -1,5 +1,4 @@
-import React from 'react';
-import { projectGalleryImages } from '../assets/assets';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiArrowRight } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +6,43 @@ import { Eye } from 'lucide-react';
 
 const ProjectShowcase = () => {
     const navigate = useNavigate();
+    const [showcaseImages, setShowcaseImages] = useState([]);
+    const [hasLoaded, setHasLoaded] = useState(false);
+
+    useEffect(() => {
+        let isMounted = true;
+        const fetchShowcase = async () => {
+            try {
+                const res = await fetch('/api/projects.php');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data.success && Array.isArray(data.projects)) {
+                    const items = [];
+                    data.projects.forEach((proj) => {
+                        const cover = proj.cover_image || (proj.images && proj.images[0]);
+                        if (cover) {
+                            items.push({
+                                id: proj.id,
+                                src: cover,
+                                title: proj.title,
+                                location: proj.location
+                            });
+                        }
+                    });
+                    if (isMounted) {
+                        setShowcaseImages(items.slice(0, 4));
+                    }
+                }
+            } catch {
+                if (isMounted) setShowcaseImages([]);
+            } finally {
+                if (isMounted) setHasLoaded(true);
+            }
+        };
+
+        fetchShowcase();
+        return () => { isMounted = false; };
+    }, []);
 
     // Staggered scroll animation
     const fadeInScale = {
@@ -19,7 +55,10 @@ const ProjectShowcase = () => {
         })
     };
 
-    const showcaseImages = projectGalleryImages.slice(0, 4);
+    // If projects have loaded from database and none exist, hide the section until admin adds them
+    if (hasLoaded && showcaseImages.length === 0) {
+        return null;
+    }
 
     return (
         <section className="w-full px-6 sm:px-8 md:px-16 lg:px-20 py-12 sm:py-16 bg-white font-sans">

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { FiArrowLeft, FiTag, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiArrowLeft, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 const ProjectDetails = () => {
     const location = useLocation();
@@ -59,7 +59,7 @@ const ProjectDetails = () => {
             <Helmet>
                 <title>{project.title} | Solar Edge Innovation</title>
                 <meta name="description" content={project.description} />
-                <meta name="keywords" content={`${project.category}, ${project.subCategory}, Solar Edge Innovation`} />
+                <meta name="keywords" content={`${project.title}, Solar Edge Innovation`} />
                 <link rel="canonical" href={`https://www.solaredgeinnovation.in/projects/${id}`} />
 
                 <meta property="og:title" content={`${project.title} | Solar Edge Innovation`} />
@@ -81,15 +81,13 @@ const ProjectDetails = () => {
 
                     {/* Project Header */}
                     <div className="bg-white rounded-2xl shadow-xl py-8 px-4 sm:px-8 md:px-16 lg:px-20 mb-8">
-                        <div className="flex flex-wrap gap-3 mb-4">
-                            <span className="bg-green-100 text-green-700 px-6 py-2 rounded-lg text-sm font-semibold flex items-center gap-2">
-                                <FiTag size={16} />
-                                {project.category}
-                            </span>
-                            <span className="bg-green-medium text-white px-6 py-2 rounded-lg text-sm font-semibold">
-                                {project.subCategory}
-                            </span>
-                        </div>
+                        {project.location && (
+                            <div className="flex flex-wrap gap-3 mb-4">
+                                <span className="bg-green-100 text-green-700 px-4 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-2">
+                                    📍 {project.location}
+                                </span>
+                            </div>
+                        )}
 
                         <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
                             {project.title}
@@ -116,19 +114,16 @@ const ProjectDetails = () => {
                             <h2 className="text-3xl font-bold text-gray-800 mb-6">Project Details</h2>
 
                             <div className="space-y-6">
-                                <div className="border-l-4 border-green-600 pl-4">
-                                    <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Category</h3>
-                                    <p className="text-xl text-gray-800 font-medium">{project.category}</p>
-                                </div>
-
-                                <div className="border-l-4 border-blue-600 pl-4">
-                                    <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Sub-Category</h3>
-                                    <p className="text-xl text-gray-800 font-medium">{project.subCategory}</p>
-                                </div>
+                                {project.location && (
+                                    <div className="border-l-4 border-green-600 pl-4">
+                                        <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Location</h3>
+                                        <p className="text-xl text-gray-800 font-medium">{project.location}</p>
+                                    </div>
+                                )}
 
                                 <div className="border-l-4 border-purple-600 pl-4">
                                     <h3 className="text-sm font-semibold text-gray-500 uppercase mb-1">Total Images</h3>
-                                    <p className="text-xl text-gray-800 font-medium">{project.images.length} Images</p>
+                                    <p className="text-xl text-gray-800 font-medium">{project.images ? project.images.length : 1} Images</p>
                                 </div>
                             </div>
                         </div>

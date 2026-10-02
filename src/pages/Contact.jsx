@@ -65,30 +65,80 @@ const keralaDistricts = [
     'Kasaragod',
 ];
 
-const faqs = [
+const defaultFaqs = [
     {
         q: 'Do you offer free on-site solar inspections and feasibility surveys?',
-        a: 'Yes! Our certified solar engineering specialists provide complimentary site surveys across Trivandrum, Kollam, and nearby regions. We inspect your rooftop orientation, shading, electrical load, and structure to calculate optimal solar yield and customized savings.',
+        a: 'Yes! Our certified solar engineering specialists provide complimentary site surveys across Trivandrum, Kollam, and nearby regions across Kerala. We inspect your rooftop orientation, shading analysis, electrical load, and structure to calculate optimal solar yield and customized savings.',
+        category: 'Residential Solar',
     },
     {
         q: 'Can you help us apply for PM Surya Ghar Muft Bijli Yojana subsidies?',
-        a: 'Absolutely. We handle end-to-end documentation, KSEB net-metering approvals, and subsidy portal filings for the PM Surya Ghar Muft Bijli Yojana, allowing eligible residential customers to claim up to ₹78,000 in direct central government subsidies.',
+        a: 'Absolutely. We handle end-to-end documentation, KSEB net-metering approvals, and national subsidy portal filings for the PM Surya Ghar Muft Bijli Yojana. Eligible residential rooftop customers can claim direct central government subsidies of up to ₹78,000.',
+        category: 'Residential Solar',
     },
     {
         q: 'How quickly does your team respond to consultation requests?',
         a: 'Our technical customer support team typically reviews all submitted inquiries and responds within 2 to 4 business hours. For urgent inquiries or immediate site visit bookings, you can also reach us directly via WhatsApp or phone at +91 95268 01406.',
+        category: 'General',
     },
     {
         q: 'What warranties and service assurances are provided with installations?',
-        a: 'We provide tier-1 MNRE/ALMM approved solar modules with up to 25 to 27 years linear power performance warranty, 5 to 10 years inverter manufacturer warranty, and comprehensive post-installation maintenance and monitoring support.',
+        a: 'We provide tier-1 MNRE/ALMM approved solar modules with up to 25 to 27 years linear power performance warranty, 5 to 10 years inverter manufacturer warranty, and comprehensive post-installation maintenance and system monitoring support.',
+        category: 'General',
     },
     {
         q: 'Do you provide hybrid backup systems for locations with frequent power cuts?',
-        a: 'Yes, our hybrid solar and inverter systems automatically switch between solar energy, battery backup, and the grid within milliseconds during blackouts, ensuring complete uninterrupted power for your appliances, air conditioning, and IT equipment.',
+        a: 'Yes, our hybrid solar and inverter systems automatically switch between solar energy, battery backup, and the grid within milliseconds during blackouts, ensuring complete uninterrupted power for your lighting, fans, air conditioning, and IT equipment.',
+        category: 'Inverters & Batteries',
+    },
+    {
+        q: 'How much rooftop area is required for a 3kW or 5kW solar plant?',
+        a: 'Typically, a 1kW solar installation requires approximately 80 to 100 square feet of shadow-free rooftop space. Therefore, a standard 3kW residential system requires around 250 to 300 sq.ft., and a 5kW system requires approximately 450 to 500 sq.ft.',
+        category: 'Residential Solar',
+    },
+    {
+        q: 'How does KSEB net metering work with on-grid solar systems?',
+        a: 'With on-grid solar and a bi-directional KSEB net meter, excess solar power generated during peak daylight hours is exported back to the KSEB power grid. At night or during cloudy periods, you import energy as needed. You are only billed for the net units consumed, dramatically reducing or eliminating your bi-monthly electricity bill.',
+        category: 'Solar',
+    },
+    {
+        q: 'Do you also provide CCTV security and electrical inverter backup solutions?',
+        a: 'Yes, Solar Edge Innovation offers integrated smart living services including high-definition IP & HD CCTV surveillance systems, tubular battery backup solutions, solar water heaters, and energy-efficient lightning surge protection systems.',
+        category: 'CCTV',
     },
 ];
 
 const Contact = () => {
+    // Dynamic FAQs with default fallback for immediate, reliable UI display
+    const [faqList, setFaqList] = useState(defaultFaqs);
+    const [selectedFaqCategory, setSelectedFaqCategory] = useState('All');
+
+    useEffect(() => {
+        let isMounted = true;
+        const fetchFaqs = async () => {
+            try {
+                const res = await fetch('/api/faqs.php');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data.success && Array.isArray(data.faqs) && data.faqs.length > 0) {
+                    const formatted = data.faqs.map((f) => ({
+                        q: f.question,
+                        a: f.answer,
+                        category: f.category || 'General',
+                    }));
+                    if (isMounted) {
+                        setFaqList(formatted);
+                    }
+                }
+            } catch {
+                // Keep default fallback on network error or offline mode
+            }
+        };
+
+        fetchFaqs();
+        return () => { isMounted = false; };
+    }, []);
+
     // Form state
     const [formData, setFormData] = useState({
         name: '',
@@ -127,8 +177,26 @@ const Contact = () => {
         }
     }, [showSuccessModal]);
 
-    // FAQ Accordion active index
+    // FAQ Accordion active index and category filter
     const [activeFaq, setActiveFaq] = useState(0);
+
+    const faqCategories = useMemo(() => {
+        const cats = new Set();
+        faqList.forEach((f) => {
+            if (f.category) cats.add(f.category);
+        });
+        return ['All', ...Array.from(cats)];
+    }, [faqList]);
+
+    const displayedFaqs = useMemo(() => {
+        if (selectedFaqCategory === 'All') return faqList;
+        return faqList.filter((f) => f.category === selectedFaqCategory);
+    }, [faqList, selectedFaqCategory]);
+
+    const handleCategorySelect = (category) => {
+        setSelectedFaqCategory(category);
+        setActiveFaq(0);
+    };
 
     // Business Hours open/closed indicator
     const isCurrentlyOpen = useMemo(() => {
@@ -399,6 +467,13 @@ const Contact = () => {
                                     <Building2 className="w-4 h-4 text-green-700" />
                                     <span>KSEB & Subsidy Support</span>
                                 </div>
+                                <a
+                                    href="#faqs"
+                                    className="flex items-center gap-2 bg-white/90 hover:bg-[#E5F5E8] backdrop-blur-xs border border-neutral-200/80 hover:border-[#1A4D2E]/30 px-3.5 py-2 rounded-full shadow-2xs transition-colors cursor-pointer text-neutral-800 hover:text-[#1A4D2E]"
+                                >
+                                    <HelpCircle className="w-4 h-4 text-green-700" />
+                                    <span>Browse FAQs ({faqList.length})</span>
+                                </a>
                             </motion.div>
                         </div>
                     </div>
@@ -1003,39 +1078,69 @@ const Contact = () => {
                 {/* =========================================================
                     FREQUENTLY ASKED QUESTIONS (FAQ) SECTION
                 ========================================================= */}
-                <section className="max-w-5xl mx-auto px-6 sm:px-10 pb-24 relative z-10">
-                    <div className="text-center max-w-xl mx-auto mb-12">
+                <section id="faqs" className="max-w-5xl mx-auto px-6 sm:px-10 pb-24 relative z-10 scroll-mt-24">
+                    <div className="text-center max-w-2xl mx-auto mb-10">
                         <span className="text-[11px] font-bold tracking-widest uppercase text-green-700 font-mono">
-                            COMMON INQUIRIES
+                            COMMON INQUIRIES & GUIDANCE
                         </span>
                         <h2 className="font-playfair font-bold text-3xl sm:text-4xl text-neutral-900 mt-2">
                             Frequently Asked Questions
                         </h2>
                         <p className="text-xs sm:text-sm text-neutral-500 font-light mt-2 leading-relaxed">
-                            Got questions about our site survey, pricing, warranties, or KSEB approvals? Here are quick answers.
+                            Got questions about our rooftop site surveys, PM Surya Ghar subsidies, KSEB net metering, or warranties? Here are quick answers.
                         </p>
+
+                        {/* Category filter tabs */}
+                        {faqCategories && faqCategories.length > 1 && (
+                            <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
+                                {faqCategories.map((cat) => {
+                                    const isSelected = selectedFaqCategory === cat;
+                                    return (
+                                        <button
+                                            key={cat}
+                                            type="button"
+                                            onClick={() => handleCategorySelect(cat)}
+                                            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                                                isSelected
+                                                    ? 'bg-[#1A4D2E] text-white shadow-xs'
+                                                    : 'bg-white text-neutral-600 hover:text-neutral-900 border border-neutral-200/80 hover:border-neutral-300'
+                                            }`}
+                                        >
+                                            {cat}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
 
                     <div className="space-y-3.5">
-                        {faqs.map((faq, index) => {
+                        {displayedFaqs && displayedFaqs.map((faq, index) => {
                             const isOpen = activeFaq === index;
                             return (
                                 <motion.div
-                                    key={index}
+                                    key={`${selectedFaqCategory}-${index}`}
                                     initial={{ opacity: 0, y: 15 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
-                                    transition={{ duration: 0.4, delay: index * 0.05 }}
-                                    className="bg-white border border-neutral-200/80 rounded-2xl overflow-hidden transition-all duration-200 shadow-2xs"
+                                    transition={{ duration: 0.35, delay: index * 0.04 }}
+                                    className="bg-white border border-neutral-200/80 hover:border-neutral-300 rounded-2xl overflow-hidden transition-all duration-200 shadow-2xs"
                                 >
                                     <button
                                         type="button"
                                         onClick={() => toggleFaq(index)}
                                         className="w-full px-6 py-4.5 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-neutral-50/60 transition-colors"
                                     >
-                                        <span className="font-bold text-sm sm:text-base text-neutral-900 font-sans">
-                                            {faq.q}
-                                        </span>
+                                        <div className="flex items-center gap-3">
+                                            <span className="font-bold text-sm sm:text-base text-neutral-900 font-sans">
+                                                {faq.q}
+                                            </span>
+                                            {faq.category && (
+                                                <span className="hidden sm:inline-block text-[10px] uppercase font-mono font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/60 shrink-0">
+                                                    {faq.category}
+                                                </span>
+                                            )}
+                                        </div>
                                         <div
                                             className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
                                                 isOpen ? 'rotate-180 bg-[#E5F5E8] text-[#1A4D2E]' : 'bg-neutral-100 text-neutral-500'
@@ -1050,7 +1155,7 @@ const Contact = () => {
                                                 initial={{ height: 0, opacity: 0 }}
                                                 animate={{ height: 'auto', opacity: 1 }}
                                                 exit={{ height: 0, opacity: 0 }}
-                                                transition={{ duration: 0.3 }}
+                                                transition={{ duration: 0.25 }}
                                                 className="overflow-hidden"
                                             >
                                                 <div className="px-6 pb-5 pt-1 text-xs sm:text-sm text-neutral-600 font-light leading-relaxed border-t border-neutral-100/80">
@@ -1062,6 +1167,39 @@ const Contact = () => {
                                 </motion.div>
                             );
                         })}
+                    </div>
+
+                    {/* Bottom CTA Card */}
+                    <div className="mt-12 bg-gradient-to-br from-emerald-50/70 via-white to-green-50/50 border border-emerald-100/80 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xs">
+                        <div className="text-center sm:text-left">
+                            <span className="text-[11px] font-bold uppercase tracking-widest text-green-700 font-mono">
+                                STILL HAVE QUESTIONS?
+                            </span>
+                            <h3 className="font-bold text-lg sm:text-xl text-neutral-900 mt-1">
+                                Need custom sizing or have unique rooftop requirements?
+                            </h3>
+                            <p className="text-xs sm:text-sm text-neutral-500 font-light mt-1 max-w-xl">
+                                Our solar engineers in Kerala are available right now to assess your energy needs and provide a free quotation.
+                            </p>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3 shrink-0">
+                            <a
+                                href={whatsappDirectLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 bg-[#1A4D2E] hover:bg-[#143d24] text-white px-5 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase font-mono transition-all shadow-xs"
+                            >
+                                <PiWhatsappLogoThin className="w-4 h-4 stroke-[1.5]" />
+                                <span>WhatsApp Us</span>
+                            </a>
+                            <a
+                                href="tel:+919526801406"
+                                className="inline-flex items-center gap-2 bg-white hover:bg-neutral-50 text-neutral-800 border border-neutral-200/90 px-5 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase font-mono transition-all shadow-2xs"
+                            >
+                                <Phone className="w-3.5 h-3.5 text-green-700" />
+                                <span>+91 95268 01406</span>
+                            </a>
+                        </div>
                     </div>
                 </section>
             </div>

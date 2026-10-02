@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 api/config.php
+api/database.sqlite
 
 node_modules
 dist

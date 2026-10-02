@@ -1,20 +1,81 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
-import { projectGalleryImages } from '../assets/assets';
-import { X, ChevronLeft, ChevronRight, Eye, Sparkles } from 'lucide-react';
+import { 
+    X, ChevronLeft, ChevronRight, Eye, Sparkles, 
+    LayoutGrid, SlidersHorizontal, MapPin, ArrowRight 
+} from 'lucide-react';
 
 const Projects = () => {
-    // Show 10 images initially
-    const [visibleCount, setVisibleCount] = useState(10);
+    // Dynamic gallery items fetched exclusively from Admin / Database API (no hardcoded dummy images)
+    const [galleryItems, setGalleryItems] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [selectedCategory, setSelectedCategory] = useState('all');
+
+    // View mode: 'grid' (horizontal landscape cards in 3 columns) | 'reel' (horizontal snap scroll reel)
+    const [viewMode, setViewMode] = useState('grid');
+    const reelRef = useRef(null);
+
+    // Show 9 images initially in grid mode
+    const [visibleCount, setVisibleCount] = useState(9);
     // Selected image index for full-screen preview lightbox modal (null when closed)
     const [previewIndex, setPreviewIndex] = useState(null);
 
-    const visibleImages = projectGalleryImages.slice(0, visibleCount);
-    const hasMore = visibleCount < projectGalleryImages.length;
+    useEffect(() => {
+        let isMounted = true;
+        const fetchGallery = async () => {
+            try {
+                const res = await fetch('/api/projects.php');
+                if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+                const data = await res.json();
+
+                if (data.success && Array.isArray(data.projects)) {
+                    const items = [];
+                    data.projects.forEach((proj) => {
+                        const images = (proj.images && proj.images.length > 0)
+                            ? proj.images
+                            : (proj.cover_image ? [proj.cover_image] : []);
+
+                        images.forEach((imgSrc, idx) => {
+                            items.push({
+                                id: `${proj.id}-${idx}`,
+                                projectId: proj.id,
+                                src: imgSrc,
+                                title: proj.title,
+                                location: proj.location,
+                                category: (proj.category || 'solar').toLowerCase(),
+                                description: proj.description
+                            });
+                        });
+                    });
+
+                    if (isMounted) {
+                        setGalleryItems(items);
+                    }
+                }
+            } catch (err) {
+                console.warn('Could not load gallery projects:', err.message);
+                if (isMounted) setGalleryItems([]);
+            } finally {
+                if (isMounted) setIsLoading(false);
+            }
+        };
+
+        fetchGallery();
+        return () => { isMounted = false; };
+    }, []);
+
+    const filteredItems = galleryItems.filter(item => {
+        if (selectedCategory === 'all') return true;
+        return (item.category || 'solar') === selectedCategory;
+    });
+
+    const visibleImages = filteredItems.slice(0, visibleCount);
+    const hasMore = visibleCount < filteredItems.length;
 
     const handleLoadMore = () => {
-        setVisibleCount((prev) => Math.min(prev + 10, projectGalleryImages.length));
+        setVisibleCount((prev) => Math.min(prev + 6, filteredItems.length));
     };
 
     const openPreview = (index) => {
@@ -27,12 +88,19 @@ const Projects = () => {
 
     const prevPreview = (e) => {
         e.stopPropagation();
-        setPreviewIndex((prev) => (prev === 0 ? projectGalleryImages.length - 1 : prev - 1));
+        setPreviewIndex((prev) => (prev === 0 ? galleryItems.length - 1 : prev - 1));
     };
 
     const nextPreview = (e) => {
         e.stopPropagation();
-        setPreviewIndex((prev) => (prev === projectGalleryImages.length - 1 ? 0 : prev + 1));
+        setPreviewIndex((prev) => (prev === galleryItems.length - 1 ? 0 : prev + 1));
+    };
+
+    const scrollReel = (direction) => {
+        if (reelRef.current) {
+            const amount = direction === 'left' ? -reelRef.current.offsetWidth * 0.75 : reelRef.current.offsetWidth * 0.75;
+            reelRef.current.scrollBy({ left: amount, behavior: 'smooth' });
+        }
     };
 
     return (
@@ -51,11 +119,11 @@ const Projects = () => {
                 <link rel="canonical" href="https://www.solaredgeinnovation.in/projects" />
             </Helmet>
 
-            <div className="min-h-screen bg-[#FAFCFA] py-16 sm:py-24 px-6 sm:px-10 lg:px-16 font-sans">
-                <div className="max-w-7xl xl:max-w-[1380px] mx-auto mt-16 sm:mt-20">
+            <div className="min-h-screen bg-[#FAFCFA] pt-32 sm:pt-40 pb-24 px-6 sm:px-10 lg:px-16 font-sans">
+                <div className="max-w-7xl xl:max-w-[1380px] mx-auto">
 
-                    {/* Header */}
-                    <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+                    {/* Header with proper spacing below navbar */}
+                    <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
                         <div className="inline-flex items-center gap-2 bg-[#E5F3E7] text-[#1A4D2E] px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-4 shadow-2xs">
                             <Sparkles className="w-3.5 h-3.5 fill-[#1A4D2E]" />
                             <span>OUR WORK GALLERY</span>
@@ -68,36 +136,223 @@ const Projects = () => {
                         </p>
                     </div>
 
-                    {/* Image Gallery Grid (Clean image cards with no text) */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
-                        {visibleImages.map((item, index) => (
-                            <motion.div
-                                key={item.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.4, delay: (index % 10) * 0.05 }}
-                                whileHover={{ y: -6 }}
-                                onClick={() => openPreview(index)}
-                                className="group relative h-72 sm:h-80 rounded-3xl overflow-hidden shadow-xs hover:shadow-2xl border border-neutral-200/80 bg-neutral-900 cursor-pointer transition-all duration-300"
+                    {/* Category Filter Pills: All | Solar | Battery | CCTV */}
+                    {galleryItems.length > 0 && (
+                        <div className="flex flex-wrap items-center justify-center gap-2.5 mb-8">
+                            {[
+                                { id: 'all', label: 'All Projects', count: galleryItems.length },
+                                { id: 'solar', label: '☀️ Solar', count: galleryItems.filter(i => (i.category || 'solar') === 'solar').length },
+                                { id: 'battery', label: '🔋 Battery', count: galleryItems.filter(i => (i.category || '') === 'battery').length },
+                                { id: 'cctv', label: '📹 CCTV', count: galleryItems.filter(i => (i.category || '') === 'cctv').length }
+                            ].map((cat) => (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => setSelectedCategory(cat.id)}
+                                    className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                                        selectedCategory === cat.id
+                                            ? 'bg-[#1A4D2E] text-white shadow-md scale-105'
+                                            : 'bg-white text-neutral-600 hover:text-neutral-900 border border-neutral-200/80 hover:bg-neutral-50 shadow-2xs'
+                                    }`}
+                                >
+                                    {cat.label} <span className="opacity-75 font-normal">({cat.count})</span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* View Controls & Counter Bar (Visible when projects exist) */}
+                    {galleryItems.length > 0 && (
+                        <div className="flex flex-wrap items-center justify-between gap-4 mb-8 pb-4 border-b border-neutral-200/80">
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
+                                    Showing {viewMode === 'grid' ? visibleImages.length : filteredItems.length} Installations
+                                </span>
+                            </div>
+
+                            {/* Layout Mode Selector (Horizontal Grid vs Horizontal Slider) */}
+                            <div className="flex items-center gap-1.5 bg-neutral-100 p-1 rounded-2xl border border-neutral-200/80">
+                                <button
+                                    onClick={() => setViewMode('grid')}
+                                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                        viewMode === 'grid'
+                                            ? 'bg-[#1A4D2E] text-white shadow-xs'
+                                            : 'text-neutral-600 hover:text-neutral-900'
+                                    }`}
+                                >
+                                    <LayoutGrid size={13} />
+                                    <span>Horizontal Grid</span>
+                                </button>
+
+                                <button
+                                    onClick={() => setViewMode('reel')}
+                                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                        viewMode === 'reel'
+                                            ? 'bg-[#1A4D2E] text-white shadow-xs'
+                                            : 'text-neutral-600 hover:text-neutral-900'
+                                    }`}
+                                >
+                                    <SlidersHorizontal size={13} />
+                                    <span>Horizontal Slider</span>
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Loading State */}
+                    {isLoading && (
+                        <div className="py-24 text-center">
+                            <div className="w-10 h-10 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                            <p className="text-sm font-medium text-neutral-500">Loading project gallery...</p>
+                        </div>
+                    )}
+
+                    {/* Default Professional Empty State */}
+                    {!isLoading && galleryItems.length === 0 && (
+                        <div className="text-center py-20 px-6 sm:px-12 bg-white border border-neutral-200/80 rounded-3xl max-w-xl mx-auto shadow-sm">
+                            <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-emerald-50 text-[#1A4D2E] flex items-center justify-center border border-emerald-100/60">
+                                <LayoutGrid size={26} />
+                            </div>
+                            <h3 className="font-playfair text-2xl sm:text-3xl font-bold text-neutral-900 mb-3 tracking-tight">
+                                Portfolio Updates in Progress
+                            </h3>
+                            <p className="text-sm sm:text-base text-neutral-600 font-light leading-relaxed max-w-md mx-auto mb-6">
+                                We are currently curating and documenting our latest residential, commercial, and industrial solar installations across Kerala. In the meantime, please feel free to connect with our team for detailed project references or customized consultations.
+                            </p>
+                            <Link
+                                to="/contact"
+                                className="inline-flex items-center gap-2 px-7 py-3 bg-[#1A4D2E] hover:bg-[#143e24] text-white text-xs font-bold uppercase tracking-wider rounded-full transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer"
                             >
-                                <img
-                                    src={item.src}
-                                    alt="Solar Edge Innovation Project Preview"
-                                    className="w-full h-full object-cover transform transition-transform duration-700 ease-out group-hover:scale-108"
-                                />
+                                Contact Our Team
+                                <ArrowRight size={14} />
+                            </Link>
+                        </div>
+                    )}
 
-                                {/* Subtle Hover Eye Icon Overlay */}
-                                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-5">
-                                    <div className="w-12 h-12 rounded-full bg-white/30 backdrop-blur-md text-white flex items-center justify-center transform scale-75 group-hover:scale-100 transition-all duration-300 shadow-md">
-                                        <Eye className="w-5 h-5 text-white" />
+                    {/* VIEW MODE 1: Horizontal Landscape Grid (3 Columns, 16:10 Widescreen) */}
+                    {!isLoading && galleryItems.length > 0 && viewMode === 'grid' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+                            {visibleImages.map((item, index) => (
+                                <motion.div
+                                    key={item.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.4, delay: (index % 6) * 0.08 }}
+                                    whileHover={{ y: -6 }}
+                                    onClick={() => openPreview(index)}
+                                    className="group relative aspect-[16/10] w-full rounded-3xl overflow-hidden shadow-xs hover:shadow-2xl border border-neutral-200/80 bg-neutral-950 cursor-pointer transition-all duration-300"
+                                >
+                                    {/* Main Widescreen Image */}
+                                    <img
+                                        src={item.src}
+                                        alt={item.title || "Solar Edge Innovation Project Preview"}
+                                        className="w-full h-full object-cover transform transition-transform duration-700 ease-out group-hover:scale-106"
+                                    />
+
+                                    {/* Subtle Gradient & Hover Info Overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-5">
+                                        {/* Top Badges */}
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold text-white bg-black/40 backdrop-blur-md border border-white/20">
+                                                {item.category === 'battery' ? '🔋 Battery' : item.category === 'cctv' ? '📹 CCTV' : '☀️ Solar'}
+                                            </span>
+
+                                            {item.location ? (
+                                                <span className="px-2.5 py-1 rounded-full text-[11px] font-bold text-white/90 bg-white/20 backdrop-blur-md border border-white/20 flex items-center gap-1">
+                                                    <MapPin size={11} /> {item.location}
+                                                </span>
+                                            ) : <div />}
+                                        </div>
+
+                                        {/* Bottom Title & Center Hover Eye */}
+                                        <div className="flex items-end justify-between gap-3">
+                                            {item.title && (
+                                                <h3 className="text-white text-base font-bold leading-snug line-clamp-1 drop-shadow-sm">
+                                                    {item.title}
+                                                </h3>
+                                            )}
+
+                                            <div className="w-10 h-10 rounded-full bg-white/30 backdrop-blur-md text-white flex items-center justify-center shrink-0 transform scale-90 group-hover:scale-100 transition-transform duration-300 shadow-md">
+                                                <Eye className="w-4.5 h-4.5 text-white" />
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
 
-                    {/* Load More Button */}
-                    {hasMore && (
+                    {/* VIEW MODE 2: Horizontal Reel / Carousel Slider */}
+                    {!isLoading && galleryItems.length > 0 && viewMode === 'reel' && (
+                        <div className="relative">
+                            {/* Left Scroll Arrow */}
+                            <button
+                                onClick={() => scrollReel('left')}
+                                className="absolute -left-4 sm:-left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white shadow-xl hover:shadow-2xl border border-neutral-200 text-[#1A4D2E] flex items-center justify-center transition-all cursor-pointer hover:scale-105"
+                                aria-label="Scroll left"
+                            >
+                                <ChevronLeft size={22} />
+                            </button>
+
+                            {/* Right Scroll Arrow */}
+                            <button
+                                onClick={() => scrollReel('right')}
+                                className="absolute -right-4 sm:-right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white shadow-xl hover:shadow-2xl border border-neutral-200 text-[#1A4D2E] flex items-center justify-center transition-all cursor-pointer hover:scale-105"
+                                aria-label="Scroll right"
+                            >
+                                <ChevronRight size={22} />
+                            </button>
+
+                            {/* Scrollable Container with horizontal snap */}
+                            <div 
+                                ref={reelRef}
+                                className="flex gap-6 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory scroll-smooth scrollbar-none"
+                                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                            >
+                                {filteredItems.map((item, index) => (
+                                    <div
+                                        key={item.id}
+                                        onClick={() => openPreview(index)}
+                                        className="group relative shrink-0 w-[300px] sm:w-[420px] md:w-[480px] aspect-[16/10] rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl border border-neutral-200/80 bg-neutral-950 cursor-pointer transition-all duration-300 snap-center"
+                                    >
+                                        <img
+                                            src={item.src}
+                                            alt={item.title || "Solar Edge Innovation Project"}
+                                            className="w-full h-full object-cover transform transition-transform duration-700 ease-out group-hover:scale-106"
+                                        />
+
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-5">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold text-white bg-black/40 backdrop-blur-md border border-white/20">
+                                                    {item.category === 'battery' ? '🔋 Battery' : item.category === 'cctv' ? '📹 CCTV' : '☀️ Solar'}
+                                                </span>
+
+                                                {item.location ? (
+                                                    <span className="px-2.5 py-1 rounded-full text-[11px] font-bold text-white/90 bg-white/20 backdrop-blur-md border border-white/20 flex items-center gap-1">
+                                                        <MapPin size={11} /> {item.location}
+                                                    </span>
+                                                ) : <div />}
+                                            </div>
+
+                                            <div className="flex items-end justify-between gap-3">
+                                                {item.title && (
+                                                    <h3 className="text-white text-base font-bold leading-snug line-clamp-1 drop-shadow-sm">
+                                                        {item.title}
+                                                    </h3>
+                                                )}
+
+                                                <div className="w-10 h-10 rounded-full bg-white/30 backdrop-blur-md text-white flex items-center justify-center shrink-0 transform scale-90 group-hover:scale-100 transition-transform duration-300 shadow-md">
+                                                    <Eye className="w-4.5 h-4.5 text-white" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Load More Button in Grid View */}
+                    {!isLoading && viewMode === 'grid' && hasMore && (
                         <div className="flex justify-center mt-12 sm:mt-16">
                             <motion.button
                                 whileHover={{ scale: 1.04 }}
@@ -105,7 +360,7 @@ const Projects = () => {
                                 onClick={handleLoadMore}
                                 className="px-8 py-3.5 bg-[#1A4D2E] hover:bg-[#143e24] text-white rounded-full text-xs font-bold tracking-widest uppercase shadow-md hover:shadow-xl transition-all cursor-pointer"
                             >
-                                Load More Projects ({projectGalleryImages.length - visibleCount} Remaining)
+                                Load More Projects ({galleryItems.length - visibleCount} Remaining)
                             </motion.button>
                         </div>
                     )}
@@ -113,7 +368,7 @@ const Projects = () => {
                 </div>
             </div>
 
-            {/* Lightbox / Preview Modal (When image card is clicked - Pure Image Preview) */}
+            {/* Lightbox / Preview Modal (When image card is clicked) */}
             <AnimatePresence>
                 {previewIndex !== null && (
                     <motion.div
@@ -162,16 +417,24 @@ const Projects = () => {
                             {/* Main Preview Image */}
                             <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 max-h-[82vh] flex items-center justify-center bg-black/40">
                                 <img
-                                    src={projectGalleryImages[previewIndex].src}
-                                    alt="Solar Edge Project Preview"
+                                    src={galleryItems[previewIndex]?.src}
+                                    alt={galleryItems[previewIndex]?.title || "Solar Edge Project Preview"}
                                     className="max-h-[82vh] w-auto max-w-full object-contain block select-none"
                                 />
                             </div>
 
-                            {/* Image Counter Bar */}
-                            <div className="mt-4 flex items-center justify-center w-full text-white/90">
-                                <span className="text-xs font-mono text-white/70 font-bold bg-white/10 px-4 py-1.5 rounded-full border border-white/15">
-                                    {previewIndex + 1} / {projectGalleryImages.length}
+                            {/* Image Caption & Counter Bar */}
+                            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between w-full text-white/90 gap-2 px-2">
+                                <div className="text-sm font-semibold text-white/90 text-center sm:text-left">
+                                    {galleryItems[previewIndex]?.title}
+                                    {galleryItems[previewIndex]?.location && (
+                                        <span className="text-xs text-white/60 ml-2 font-normal">
+                                            📍 {galleryItems[previewIndex].location}
+                                        </span>
+                                    )}
+                                </div>
+                                <span className="text-xs font-mono text-white/70 font-bold bg-white/10 px-4 py-1.5 rounded-full border border-white/15 shrink-0">
+                                    {previewIndex + 1} / {galleryItems.length}
                                 </span>
                             </div>
                         </motion.div>

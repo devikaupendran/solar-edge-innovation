@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import React, { useEffect, useState, useRef } from 'react';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import Home from './pages/Home';
 import AboutUs from './pages/AboutUs';
 import Services from './pages/Services';
@@ -43,16 +44,63 @@ const ScrollToTop = () => {
 
 const AppContent = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const isAdminRoute = location.pathname.startsWith('/admin');
+    const prevPathRef = useRef(location.pathname);
 
     useEffect(() => {
-        if (window.lenis) {
-            if (isAdminRoute) {
-                window.lenis.stop();
-            } else {
-                window.lenis.start();
+        const isAuth = sessionStorage.getItem('solar_admin_auth') === 'true';
+
+        // If user was on /admin, is authenticated, and browser back tried to move away from /admin
+        if (prevPathRef.current === '/admin' && location.pathname !== '/admin' && isAuth) {
+            navigate('/admin', { replace: true });
+            window.history.pushState(null, '', '/admin');
+            toast('Please use the Logout button to exit the admin panel.', {
+                icon: '🔒',
+                id: 'admin-back-lock',
+                duration: 3000
+            });
+            return;
+        }
+
+        prevPathRef.current = location.pathname;
+    }, [location.pathname, navigate]);
+
+    useEffect(() => {
+        let rafId = null;
+
+        if (isAdminRoute) {
+            // Completely destroy and detach Lenis on Admin routes to ensure 100% native browser scrolling
+            if (window.lenis) {
+                try {
+                    window.lenis.destroy();
+                } catch { }
+                window.lenis = null;
+            }
+            document.documentElement.style.overflow = 'auto';
+            document.body.style.overflow = 'auto';
+        } else {
+            // Initialize Lenis smooth scroll for public website pages
+            if (!window.lenis) {
+                const lenis = new Lenis({
+                    duration: 1.2,
+                    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                    smoothWheel: true,
+                    smoothTouch: false,
+                });
+                window.lenis = lenis;
+
+                function raf(time) {
+                    lenis.raf(time);
+                    rafId = requestAnimationFrame(raf);
+                }
+                rafId = requestAnimationFrame(raf);
             }
         }
+
+        return () => {
+            if (rafId) cancelAnimationFrame(rafId);
+        };
     }, [isAdminRoute]);
 
     return (
@@ -79,29 +127,8 @@ const App = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Initialize Lenis smooth scroll
-        const lenis = new Lenis({
-            duration: 1.2,
-            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // easeOutQuart
-            smoothWheel: true,
-            smoothTouch: false,
-        });
-
-        window.lenis = lenis;
-
-        function raf(time) {
-            lenis.raf(time);
-            requestAnimationFrame(raf);
-        }
-
-        requestAnimationFrame(raf);
-
-        setTimeout(() => setIsLoading(false), 600);
-
-        return () => {
-            lenis.destroy();
-            window.lenis = null;
-        };
+        const timer = setTimeout(() => setIsLoading(false), 500);
+        return () => clearTimeout(timer);
     }, []);
 
     return (

@@ -5,6 +5,7 @@ import { defaultQuotationData } from '../../data/defaultQuotationData';
 import { QuotationFormControls } from './QuotationFormControls';
 import { QuotationPreview6Pages } from './QuotationPreview6Pages';
 import { CheckCircle2, AlertCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export const QuotationEditor = ({ onLogout }) => {
     // Load initial quotation data from localStorage or default
@@ -20,20 +21,13 @@ export const QuotationEditor = ({ onLogout }) => {
         return defaultQuotationData;
     });
 
-    const [notification, setNotification] = useState(null);
-
-    const showToast = (message, type = 'success') => {
-        setNotification({ message, type });
-        setTimeout(() => setNotification(null), 3500);
-    };
-
     // Save quotation to local storage
     const handleSave = () => {
         try {
             localStorage.setItem('solar_quotation_data', JSON.stringify(quotationData));
-            showToast("Quotation data saved successfully!");
+            toast.success("Quotation template data saved!");
         } catch (e) {
-            showToast("Failed to save quotation data.", "error");
+            toast.error("Failed to save quotation data.");
         }
     };
 
@@ -42,14 +36,14 @@ export const QuotationEditor = ({ onLogout }) => {
         if (window.confirm("Are you sure you want to reset all fields to the default 6-page template?")) {
             setQuotationData(defaultQuotationData);
             localStorage.removeItem('solar_quotation_data');
-            showToast("Reset to default 6-page template values.");
+            toast.success("Reset to default 6-page template values.");
         }
     };
 
     // Generate & Download 6-Page PDF matching exact live preview per page
     const handleGeneratePdf = async () => {
         handleSave();
-        setNotification(null); // Clear any active toast overlay before capturing
+        const pdfToast = toast.loading("Generating 6-page PDF document...");
 
         const container = document.querySelector('.quotation-preview-container');
         if (!container) {
@@ -122,7 +116,7 @@ export const QuotationEditor = ({ onLogout }) => {
 
             const fileName = `Solaredge_Quotation_${(quotationData.refNo || 'DCR-09-26-13').replace(/[/\\?%*:|"<>]/g, '-')}.pdf`;
             pdf.save(fileName);
-            showToast("Single 6-Page PDF downloaded successfully!");
+            toast.success("Single 6-Page PDF downloaded successfully!");
         } catch (err) {
             if (document.body.contains(clone)) {
                 document.body.removeChild(clone);
@@ -134,18 +128,6 @@ export const QuotationEditor = ({ onLogout }) => {
 
     return (
         <div className="w-full h-screen flex flex-col md:flex-row bg-neutral-100 overflow-hidden font-sans relative" data-lenis-prevent>
-            {/* Notification Toast */}
-            {notification && (
-                <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 bg-neutral-900 text-white rounded-xl shadow-2xl border border-neutral-700 animate-bounce toast-notification no-print">
-                    {notification.type === 'success' ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    ) : (
-                        <AlertCircle className="w-4 h-4 text-red-400" />
-                    )}
-                    <span className="text-xs font-semibold">{notification.message}</span>
-                </div>
-            )}
-
             {/* Comprehensive Print Stylesheet Injection for 6-Page A4 Multipage Output */}
             <style>{`
                 @media print {
