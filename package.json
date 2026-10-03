@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:backend": "cd laravel-core && php artisan serve",
     "build": "vite build && node scripts/copy-backend-to-dist.js",
     "lint": "eslint .",
     "preview": "vite preview"

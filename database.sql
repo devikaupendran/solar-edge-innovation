@@ -98,14 +98,13 @@ ON DUPLICATE KEY UPDATE `question` = VALUES(`question`);
 CREATE TABLE IF NOT EXISTS `admin_tokens` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `admin_id` INT NOT NULL,
-    `token` VARCHAR(64) NOT NULL UNIQUE,
+    `token` TEXT NOT NULL,
     `name` VARCHAR(100) NOT NULL DEFAULT 'Admin API Token',
     `expires_at` DATETIME NOT NULL,
     `last_used_at` DATETIME NULL,
     `status` ENUM('active', 'revoked', 'deleted') NOT NULL DEFAULT 'active',
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-    INDEX `idx_token` (`token`),
     INDEX `idx_admin_id` (`admin_id`),
     CONSTRAINT `fk_admin_tokens_admin`
         FOREIGN KEY (`admin_id`)
