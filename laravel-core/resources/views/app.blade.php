@@ -28,11 +28,11 @@
     <link rel="canonical" href="https://solaredgeinnovations.in" />
 
     <!-- Bundled React Application Assets -->
-    <script type="module" crossorigin src="{{ asset('assets/index-D1SKnNlj.js') }}"></script>
+    <script type="module" crossorigin src="{{ asset('assets/index-BEr8PDdX.js') }}"></script>
     <link rel="modulepreload" crossorigin href="{{ asset('assets/vendor-react-Dazix4UH.js') }}">
     <link rel="modulepreload" crossorigin href="{{ asset('assets/vendor-motion-MOU-OT13.js') }}">
-    <link rel="modulepreload" crossorigin href="{{ asset('assets/vendor-lucide-THeyNjP-.js') }}">
-    <link rel="stylesheet" crossorigin href="{{ asset('assets/index-B3ezKBck.css') }}">
+    <link rel="modulepreload" crossorigin href="{{ asset('assets/vendor-lucide-Bxyh_cZw.js') }}">
+    <link rel="stylesheet" crossorigin href="{{ asset('assets/index-CGbW2EDf.css') }}">
 </head>
 
 <body>

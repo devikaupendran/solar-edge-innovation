@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Schema;
 
 class SetupController extends Controller
 {
-    protected array $tablesToCheck = ['admins', 'projects', 'project_images', 'faqs', 'admin_tokens'];
+    protected array $tablesToCheck = ['admins', 'projects', 'project_images', 'faqs', 'admin_tokens', 'contact_inquiries'];
 
     /**
      * Check database tables and health.

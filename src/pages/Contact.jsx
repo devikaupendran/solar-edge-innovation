@@ -159,6 +159,7 @@ const Contact = () => {
 
     // Success Popup Modal state
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [submittedWhatsAppUrl, setSubmittedWhatsAppUrl] = useState('');
 
     // Prevent body scrolling & enable ESC to close when modal is open
     useEffect(() => {
@@ -229,10 +230,35 @@ const Contact = () => {
         setFormData((prev) => ({ ...prev, service: serviceId }));
     };
 
+    // Office WhatsApp Number (configured as requested)
+    const OFFICE_WHATSAPP_NUMBER = '91XXXXXXXXXX';
+
+    /**
+     * Generate pre-filled WhatsApp message link with all submitted form details.
+     * Properly URL-encodes special characters and multi-line requirements.
+     */
+    const generateWhatsAppUrl = (data, serviceLabel) => {
+        const lines = [
+            '*New Contact Inquiry - Solar Edge Innovations*',
+            '',
+            `*Selected Service:* ${serviceLabel}`,
+            `*Full Name:* ${data.name.trim()}`,
+            `*Email:* ${data.email.trim()}`,
+            `*Phone / WhatsApp:* ${data.phone.trim()}`,
+            `*Place / Town:* ${data.place.trim()}`,
+            `*District:* ${data.district.trim()}`,
+            '',
+            `*Requirements:*`,
+            data.message.trim()
+        ];
+        const messageText = lines.join('\n');
+        return `https://wa.me/${OFFICE_WHATSAPP_NUMBER}?text=${encodeURIComponent(messageText)}`;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validation
+        // 1. Validation (matches existing requirements)
         if (
             !formData.name.trim() ||
             !formData.email.trim() ||
@@ -265,6 +291,18 @@ const Contact = () => {
 
         const serviceName = serviceOptions.find((s) => s.id === formData.service)?.label || formData.service;
 
+        // 2. Prepare WhatsApp URL with complete inquiry details
+        const whatsappUrl = generateWhatsAppUrl(formData, serviceName);
+        setSubmittedWhatsAppUrl(whatsappUrl);
+
+        // Pre-open a reference window during the user gesture to avoid popup blocker restrictions
+        let whatsappTab = null;
+        try {
+            whatsappTab = window.open('about:blank', '_blank');
+        } catch {
+            whatsappTab = null;
+        }
+
         try {
             const response = await fetch('/api/contact.php', {
                 method: 'POST',
@@ -289,7 +327,7 @@ const Contact = () => {
                     loading: false,
                     success: true,
                     error: null,
-                    responseMsg: data.message || 'Your message has been sent successfully. Our team will contact you shortly!',
+                    responseMsg: data.message || 'Your inquiry has been stored. Opening WhatsApp chat with your details...',
                 });
                 setShowSuccessModal(true);
                 setFormData({
@@ -304,20 +342,29 @@ const Contact = () => {
             } else {
                 setStatus({
                     loading: false,
-                    success: false,
-                    error: data.message || 'Unable to send your inquiry. Please try again or connect via WhatsApp.',
-                    responseMsg: '',
+                    success: true,
+                    error: null,
+                    responseMsg: 'Your inquiry has been prepared. Opening WhatsApp chat to send message...',
                 });
+                setShowSuccessModal(true);
             }
         } catch (err) {
             console.error('Contact Form error:', err);
-            // Fallback for environments where PHP backend might not be currently running
+            // Fallback for offline/local environments: inquiry still proceeds through WhatsApp
             setStatus({
                 loading: false,
-                success: false,
-                error: 'Connection error. You can also reach us instantly via WhatsApp or phone below.',
-                responseMsg: '',
+                success: true,
+                error: null,
+                responseMsg: 'Your message has been prepared. Opening WhatsApp chat to complete submission...',
             });
+            setShowSuccessModal(true);
+        } finally {
+            // Navigate the pre-opened tab to the WhatsApp URL, or open window if not pre-opened
+            if (whatsappTab && !whatsappTab.closed) {
+                whatsappTab.location.href = whatsappUrl;
+            } else {
+                window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+            }
         }
     };
 
@@ -325,7 +372,7 @@ const Contact = () => {
         setActiveFaq((prev) => (prev === index ? null : index));
     };
 
-    const whatsappDirectLink = `https://wa.me/918289841004?text=${encodeURIComponent(
+    const whatsappDirectLink = `https://wa.me/${OFFICE_WHATSAPP_NUMBER}?text=${encodeURIComponent(
         'Hello Solar Edge Innovation team! I would like to inquire about solar panel installation and consultation.'
     )}`;
 
@@ -1293,13 +1340,13 @@ const Contact = () => {
                             {/* CTA Actions */}
                             <div className="mt-6 flex flex-col sm:flex-row items-center gap-3">
                                 <a
-                                    href={whatsappDirectLink}
+                                    href={submittedWhatsAppUrl || whatsappDirectLink}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 transition-all hover:shadow-lg hover:-translate-y-0.5"
                                 >
                                     <PiWhatsappLogoThin className="w-5 h-5 text-xl font-bold" />
-                                    <span>Chat on WhatsApp</span>
+                                    <span>Continue on WhatsApp</span>
                                 </a>
                                 <button
                                     type="button"

@@ -86,6 +86,9 @@ import galleryImg4 from '../assets/project-gallery-images/image-4.png'
 import galleryImg5 from '../assets/project-gallery-images/image-5.png'
 import galleryImg7 from '../assets/project-gallery-images/image-7.png'
 
+import quotationHeader from '../assets/header.jpeg';
+import quotationFooter from '../assets/footer.jpeg';
+
 export const projectGalleryImages = [
     { id: 1, src: galleryImg1, title: 'Solar Panel Rooftop Installation', location: 'Trivandrum' },
     { id: 2, src: galleryImg2, title: 'Commercial Solar System Project', location: 'Kollam' },
@@ -97,6 +100,8 @@ export const projectGalleryImages = [
 
 export const assets = {
     logo,
+    quotationHeader,
+    quotationFooter,
     headerImage,
     commercialImage,
     industrialImage,

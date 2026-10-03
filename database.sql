@@ -112,5 +112,29 @@ CREATE TABLE IF NOT EXISTS `admin_tokens` (
         ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-SET FOREIGN_KEY_CHECKS = 1;
+-- ============================================================
+-- 6. Table: contact_inquiries
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `contact_inquiries` (
+    `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `name` VARCHAR(100) NOT NULL,
+    `email` VARCHAR(150) NOT NULL,
+    `phone` VARCHAR(30) NOT NULL,
+    `service` VARCHAR(150) NOT NULL,
+    `place` VARCHAR(100) NOT NULL,
+    `district` VARCHAR(100) NOT NULL,
+    `message` TEXT NOT NULL,
+    `status` ENUM('pending', 'responded', 'deleted') NOT NULL DEFAULT 'pending',
+    `responded_at` TIMESTAMP NULL DEFAULT NULL,
+    `responded_by` VARCHAR(100) NULL DEFAULT NULL,
+    `admin_notes` TEXT NULL,
+    `ip_address` VARCHAR(45) NULL,
+    `user_agent` TEXT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+    INDEX `idx_inquiry_status` (`status`),
+    INDEX `idx_inquiry_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+SET FOREIGN_KEY_CHECKS = 1;

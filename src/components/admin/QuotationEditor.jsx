@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import React, { useState, useEffect, useRef } from 'react';
+import * as jspdfLib from 'jspdf';
+import html2canvas from 'html2canvas-pro'; // npm i html2canvas-pro  (handles Tailwind v4 oklch colors)
+
+// Resilient constructor resolution across ESM / Vite / CJS bundling
+const jsPDF = jspdfLib.jsPDF || jspdfLib.default?.jsPDF || jspdfLib.default;
 import { defaultQuotationData } from '../../data/defaultQuotationData';
 import { QuotationFormControls } from './QuotationFormControls';
 import { QuotationPreview6Pages } from './QuotationPreview6Pages';
-import { CheckCircle2, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export const QuotationEditor = ({ onLogout }) => {
@@ -21,13 +23,167 @@ export const QuotationEditor = ({ onLogout }) => {
         return defaultQuotationData;
     });
 
+    // Active tab state & bidirectional scroll synchronization
+    const [activeTab, setActiveTab] = useState('client');
+    const activeTabRef = useRef('client');
+    const isProgrammaticScrollRef = useRef(false);
+    const scrollTimeoutRef = useRef(null);
+    const rightPanelRef = useRef(null);
+
+    // Synchronize document.title with Client Name and Date so browser "Save as PDF" / Print uses it automatically
+    useEffect(() => {
+        const originalTitle = document.title;
+        const client = quotationData.clientInfo?.name ? quotationData.clientInfo.name.trim() : 'Client';
+        const date = quotationData.date ? quotationData.date.trim().replace(/[/\\?%*:|"<>]/g, '-') : '';
+        document.title = date ? `Quotation - ${client} - ${date}` : `Quotation - ${client}`;
+
+        return () => {
+            document.title = originalTitle;
+        };
+    }, [quotationData.clientInfo?.name, quotationData.date]);
+
+    // Handle clicking a tab on the left: switch tab and smoothly scroll right preview to that section
+    const handleTabChange = (tabId) => {
+        setActiveTab(tabId);
+        activeTabRef.current = tabId;
+
+        const panel = rightPanelRef.current;
+        const targetEl = document.getElementById(`preview-page-${tabId}`);
+        if (targetEl && panel) {
+            isProgrammaticScrollRef.current = true;
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
+            }
+
+            const panelRect = panel.getBoundingClientRect();
+            const targetRect = targetEl.getBoundingClientRect();
+            const targetScrollTop = panel.scrollTop + (targetRect.top - panelRect.top) - 16;
+
+            panel.scrollTo({
+                top: Math.max(0, targetScrollTop),
+                behavior: 'smooth'
+            });
+
+            // Unlock manual scroll detection after smooth scroll settles
+            scrollTimeoutRef.current = setTimeout(() => {
+                isProgrammaticScrollRef.current = false;
+            }, 850);
+        }
+    };
+
+    // Watch right preview manual scroll and automatically switch left tabs
+    useEffect(() => {
+        const panel = rightPanelRef.current;
+        if (!panel) return;
+
+        let rafId = null;
+
+        const handleScroll = () => {
+            if (isProgrammaticScrollRef.current) return;
+
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+            }
+
+            rafId = requestAnimationFrame(() => {
+                if (isProgrammaticScrollRef.current) return;
+
+                const scrollTop = panel.scrollTop;
+                const scrollHeight = panel.scrollHeight;
+                const clientHeight = panel.clientHeight;
+
+                // Scrolled to topmost area -> Client & Ref
+                if (scrollTop <= 80) {
+                    if (activeTabRef.current !== 'client') {
+                        activeTabRef.current = 'client';
+                        setActiveTab('client');
+                    }
+                    return;
+                }
+
+                // Scrolled to bottommost area -> Terms & Warranty
+                if (scrollTop + clientHeight >= scrollHeight - 60) {
+                    if (activeTabRef.current !== 'terms') {
+                        activeTabRef.current = 'terms';
+                        setActiveTab('terms');
+                    }
+                    return;
+                }
+
+                const pages = panel.querySelectorAll('.quotation-page[data-section]');
+                if (!pages || pages.length === 0) return;
+
+                const panelRect = panel.getBoundingClientRect();
+                // Focal detection line at 35% from the top of visible viewport
+                const focalLine = panelRect.top + panelRect.height * 0.35;
+
+                let currentSection = null;
+
+                for (let i = 0; i < pages.length; i++) {
+                    const page = pages[i];
+                    const rect = page.getBoundingClientRect();
+
+                    if (rect.top <= focalLine && rect.bottom > focalLine) {
+                        currentSection = page.getAttribute('data-section');
+                        break;
+                    }
+                }
+
+                // If in-between page gap, find page whose top is closest to the focal line
+                if (!currentSection) {
+                    let minDiff = Infinity;
+                    pages.forEach((page) => {
+                        const rect = page.getBoundingClientRect();
+                        const diff = Math.abs(rect.top - focalLine);
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            currentSection = page.getAttribute('data-section');
+                        }
+                    });
+                }
+
+                if (currentSection && activeTabRef.current !== currentSection) {
+                    activeTabRef.current = currentSection;
+                    setActiveTab(currentSection);
+                }
+            });
+        };
+
+        // Cancel programmatic lock immediately if the user interacts manually with wheel or touch
+        const cancelProgrammatic = () => {
+            if (isGeneratingPdfRef.current) return;
+            if (isProgrammaticScrollRef.current) {
+                isProgrammaticScrollRef.current = false;
+                if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+            }
+        };
+
+        panel.addEventListener('scroll', handleScroll, { passive: true });
+        panel.addEventListener('wheel', cancelProgrammatic, { passive: true });
+        panel.addEventListener('touchstart', cancelProgrammatic, { passive: true });
+
+        return () => {
+            panel.removeEventListener('scroll', handleScroll);
+            panel.removeEventListener('wheel', cancelProgrammatic);
+            panel.removeEventListener('touchstart', cancelProgrammatic);
+            if (rafId) cancelAnimationFrame(rafId);
+            if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        };
+    }, []);
+
     // Save quotation to local storage
-    const handleSave = () => {
+    const handleSave = (showToastNotification = true) => {
         try {
             localStorage.setItem('solar_quotation_data', JSON.stringify(quotationData));
-            toast.success("Quotation template data saved!");
+            const client = quotationData.clientInfo?.name?.trim() || 'Client';
+            const date = quotationData.date?.trim() || '';
+            if (showToastNotification) {
+                toast.success(`Quotation saved for ${client}${date ? ` (${date})` : ''}!`);
+            }
         } catch (e) {
-            toast.error("Failed to save quotation data.");
+            if (showToastNotification) {
+                toast.error("Failed to save quotation data.");
+            }
         }
     };
 
@@ -36,41 +192,43 @@ export const QuotationEditor = ({ onLogout }) => {
         if (window.confirm("Are you sure you want to reset all fields to the default 6-page template?")) {
             setQuotationData(defaultQuotationData);
             localStorage.removeItem('solar_quotation_data');
-            toast.success("Reset to default 6-page template values.");
+            toast.success("Reset to default template values.");
         }
     };
 
-    // Generate & Download 6-Page PDF matching exact live preview per page
+    const isGeneratingPdfRef = useRef(false);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+    const [pdfProgress, setPdfProgress] = useState("");
+
+    // Generate & Download PDF matching exact live preview per page
     const handleGeneratePdf = async () => {
-        handleSave();
-        const pdfToast = toast.loading("Generating 6-page PDF document...");
+        if (isGeneratingPdfRef.current || isGeneratingPdf) return;
 
-        const container = document.querySelector('.quotation-preview-container');
-        if (!container) {
-            window.print();
-            return;
-        }
-
-        showToast("Generating 6-page PDF document...", "success");
-
-        // Create an off-screen clone for reliable multi-page DOM rendering
-        const clone = container.cloneNode(true);
-        clone.style.position = 'fixed';
-        clone.style.left = '-9999px';
-        clone.style.top = '0px';
-        clone.style.width = '210mm';
-        clone.style.height = 'auto';
-        clone.style.zIndex = '-9999';
-        clone.style.overflow = 'visible';
-        clone.style.gap = '0px';
-        clone.style.padding = '0px';
-        clone.style.margin = '0px';
-        clone.style.background = '#ffffff';
-
-        document.body.appendChild(clone);
+        // Save silently without popping up a toast that flickers
+        handleSave(false);
+        isGeneratingPdfRef.current = true;
+        isProgrammaticScrollRef.current = true;
+        setIsGeneratingPdf(true);
+        setPdfProgress("Starting...");
 
         try {
-            const pages = clone.querySelectorAll('.quotation-page');
+            const container = document.querySelector('.quotation-preview-container');
+            if (!container) {
+                window.print();
+                return;
+            }
+
+            const pages = container.querySelectorAll('.quotation-page');
+            if (!pages || pages.length === 0) {
+                toast.error("No quotation pages found to export.");
+                return;
+            }
+
+            // Make sure web fonts are loaded so text widths match the live preview
+            if (document.fonts && document.fonts.ready) {
+                await document.fonts.ready;
+            }
+
             const pdf = new jsPDF({
                 orientation: 'portrait',
                 unit: 'mm',
@@ -82,26 +240,101 @@ export const QuotationEditor = ({ onLogout }) => {
             const pdfHeight = 297;
 
             for (let i = 0; i < pages.length; i++) {
+                setPdfProgress(`Page ${i + 1}/${pages.length}`);
+
                 const pageEl = pages[i];
-                pageEl.style.margin = '0px';
-                pageEl.style.boxShadow = 'none';
+
+                // Ensure all images in pageEl are fully loaded
+                const imgs = pageEl.querySelectorAll('img');
+                await Promise.all(
+                    Array.from(imgs).map((img) => {
+                        if (img.complete) return Promise.resolve();
+                        return new Promise((resolve) => {
+                            img.onload = resolve;
+                            img.onerror = resolve;
+                        });
+                    })
+                );
 
                 const canvas = await html2canvas(pageEl, {
                     scale: 2,
                     useCORS: true,
+                    allowTaint: true,
                     logging: false,
                     backgroundColor: '#ffffff',
                     width: pageEl.offsetWidth || 794,
                     height: pageEl.offsetHeight || 1123,
+                    scrollX: 0,
+                    scrollY: 0,
+                    onclone: (clonedDoc, clonedElement) => {
+                        // 1. Remove toast containers and fixed overlays from the cloned document
+                        clonedDoc
+                            .querySelectorAll(
+                                'div[style*="z-index: 9999"], div[style*="z-index:9999"], [role="status"], [aria-live="polite"], div[style*="position: fixed"]'
+                            )
+                            .forEach((node) => {
+                                if (!node.classList?.contains('quotation-page') && !node.closest('.quotation-page')) {
+                                    node.remove();
+                                }
+                            });
+
+                        // 2. Ensure preview panel in the cloned document does not clip off-screen pages
+                        const clonedPanel = clonedDoc.querySelector('.quotation-preview-right-panel');
+                        if (clonedPanel) {
+                            clonedPanel.style.overflow = 'visible';
+                            clonedPanel.style.height = 'auto';
+                            clonedPanel.style.maxHeight = 'none';
+                        }
+
+                        // 3. Freeze browser-computed spacing and text metrics as plain pixel values
+                        const targetNode = clonedElement || clonedDoc;
+                        const view = clonedDoc.defaultView;
+                        targetNode
+                            .querySelectorAll('.quotation-page, .quotation-page *')
+                            .forEach((el) => {
+                                const cs = view.getComputedStyle(el);
+
+                                el.style.boxShadow = 'none';
+                                el.style.textShadow = 'none';
+
+                                el.style.marginTop = cs.marginTop;
+                                el.style.marginBottom = cs.marginBottom;
+                                el.style.paddingTop = cs.paddingTop;
+                                el.style.paddingBottom = cs.paddingBottom;
+
+                                if (cs.letterSpacing !== 'normal') {
+                                    el.style.letterSpacing = cs.letterSpacing;
+                                }
+                                el.style.lineHeight = cs.lineHeight;
+                            });
+
+                        // 4. Headings and table headers must never break inside a word
+                        targetNode
+                            .querySelectorAll(
+                                '.quotation-page th, .quotation-page h1, .quotation-page h2, .quotation-page h3'
+                            )
+                            .forEach((el) => {
+                                el.style.wordBreak = 'keep-all';
+                                el.style.overflowWrap = 'normal';
+                            });
+                    },
                     ignoreElements: (el) => {
-                        return el.classList && (
-                            el.classList.contains('toast-notification') ||
-                            el.classList.contains('no-print')
+                        if (!el) return false;
+                        if (el.classList?.contains('quotation-page')) return false;
+                        return (
+                            el.getAttribute?.('role') === 'status' ||
+                            el.getAttribute?.('aria-live') === 'polite' ||
+                            el.closest?.('[role="status"]') !== null ||
+                            el.closest?.('[aria-live="polite"]') !== null ||
+                            (el.style && (el.style.zIndex === '9999' || el.style.position === 'fixed')) ||
+                            (el.parentElement?.style && el.parentElement.style.zIndex === '9999') ||
+                            el.classList?.contains('toast-notification') ||
+                            el.classList?.contains('no-print')
                         );
                     }
                 });
 
-                const imgData = canvas.toDataURL('image/jpeg', 0.98);
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
 
                 if (i > 0) {
                     pdf.addPage('a4', 'portrait');
@@ -110,25 +343,40 @@ export const QuotationEditor = ({ onLogout }) => {
                 pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
             }
 
-            if (document.body.contains(clone)) {
-                document.body.removeChild(clone);
-            }
+            setPdfProgress("Saving...");
 
-            const fileName = `Solaredge_Quotation_${(quotationData.refNo || 'DCR-09-26-13').replace(/[/\\?%*:|"<>]/g, '-')}.pdf`;
+            const clientClean = (quotationData.clientInfo?.name || 'Client')
+                .trim()
+                .replace(/[/\\?%*:|"<>]/g, '')
+                .replace(/\s+/g, '_');
+
+            const dateClean = (quotationData.date || '')
+                .trim()
+                .replace(/[/\\?%*:|"<>]/g, '-')
+                .replace(/\s+/g, '_');
+
+            const fileName = dateClean
+                ? `Quotation_${clientClean}_${dateClean}.pdf`
+                : `Quotation_${clientClean}.pdf`;
+
             pdf.save(fileName);
-            toast.success("Single 6-Page PDF downloaded successfully!");
+
+            toast.success(`Quotation PDF (${pages.length} pages) downloaded successfully!`);
         } catch (err) {
-            if (document.body.contains(clone)) {
-                document.body.removeChild(clone);
-            }
             console.error("PDF generation failed, falling back to window.print()", err);
+            toast.error("Automatic PDF download failed. Opening print view...");
             window.print();
+        } finally {
+            isGeneratingPdfRef.current = false;
+            isProgrammaticScrollRef.current = false;
+            setIsGeneratingPdf(false);
+            setPdfProgress("");
         }
     };
 
     return (
         <div className="w-full h-screen flex flex-col md:flex-row bg-neutral-100 overflow-hidden font-sans relative" data-lenis-prevent>
-            {/* Comprehensive Print Stylesheet Injection for 6-Page A4 Multipage Output */}
+            {/* Print Stylesheet Injection */}
             <style>{`
                 @media print {
                     *, *::before, *::after {
@@ -137,8 +385,13 @@ export const QuotationEditor = ({ onLogout }) => {
                         color-adjust: exact !important;
                     }
 
+                    @page {
+                        size: A4 portrait;
+                        margin: 0 !important;
+                    }
+
                     /* Hide non-printable UI elements */
-                    header, footer, nav, .no-print, .quotation-editor-left-panel, button, .toast-notification {
+                    header, footer, nav, .no-print, .quotation-editor-left-panel, button, .toast-notification, [role="status"] {
                         display: none !important;
                     }
 
@@ -146,11 +399,22 @@ export const QuotationEditor = ({ onLogout }) => {
                         height: auto !important;
                         min-height: 0 !important;
                         max-height: none !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
                         overflow: visible !important;
                         background: white !important;
                     }
 
-                    .quotation-preview-right-panel,
+                    .quotation-preview-right-panel {
+                        width: 210mm !important;
+                        height: auto !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        overflow: visible !important;
+                        background: white !important;
+                        display: block !important;
+                    }
+
                     .quotation-preview-container {
                         width: 210mm !important;
                         height: auto !important;
@@ -164,15 +428,15 @@ export const QuotationEditor = ({ onLogout }) => {
 
                     .quotation-page {
                         width: 210mm !important;
-                        height: 297mm !important;
-                        min-height: 297mm !important;
-                        max-height: 297mm !important;
-                        margin: 0 !important;
+                        height: 296mm !important;
+                        min-height: 296mm !important;
+                        max-height: 296mm !important;
+                        margin: 0 auto !important;
                         padding: 0 !important;
                         box-shadow: none !important;
                         border: none !important;
-                        page-break-after: always !important;
-                        break-after: page !important;
+                        page-break-after: always;
+                        break-after: page;
                         page-break-inside: avoid !important;
                         break-inside: avoid !important;
                         overflow: hidden !important;
@@ -180,14 +444,17 @@ export const QuotationEditor = ({ onLogout }) => {
                         background: white !important;
                     }
 
+                    /* Last page never breaks after, preventing an extra blank page */
+                    .quotation-preview-container > .quotation-page:last-child,
+                    .quotation-preview-container > .quotation-page:last-of-type,
+                    .quotation-page:last-child,
+                    .quotation-page:last-of-type,
+                    .quotation-page.page-break-after-avoid,
                     .page-break-after-avoid {
                         page-break-after: avoid !important;
                         break-after: avoid !important;
-                    }
-
-                    @page {
-                        size: A4 portrait;
-                        margin: 0mm !important;
+                        margin-bottom: 0 !important;
+                        padding-bottom: 0 !important;
                     }
                 }
             `}</style>
@@ -200,12 +467,20 @@ export const QuotationEditor = ({ onLogout }) => {
                     onSave={handleSave}
                     onReset={handleReset}
                     onGeneratePdf={handleGeneratePdf}
+                    isGeneratingPdf={isGeneratingPdf}
+                    pdfProgress={pdfProgress}
                     onLogout={onLogout}
+                    activeTab={activeTab}
+                    onTabChange={handleTabChange}
                 />
             </div>
 
-            {/* Right Column: Live 6-Page Preview */}
-            <div className="flex-1 h-[50vh] md:h-full overflow-y-auto quotation-preview-right-panel p-4 md:p-8 bg-neutral-200/80" data-lenis-prevent>
+            {/* Right Column: Live Preview */}
+            <div
+                ref={rightPanelRef}
+                className="flex-1 h-[50vh] md:h-full overflow-y-auto quotation-preview-right-panel p-4 md:p-8 bg-neutral-200/80"
+                data-lenis-prevent
+            >
                 <QuotationPreview6Pages data={quotationData} />
             </div>
         </div>

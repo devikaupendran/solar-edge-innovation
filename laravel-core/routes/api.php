@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Api\Admin\FaqController as AdminFaqController;
+use App\Http\Controllers\Api\Admin\InquiryController as AdminInquiryController;
 use App\Http\Controllers\Api\Admin\ProjectController as AdminProjectController;
 use App\Http\Controllers\Api\Admin\StatsController as AdminStatsController;
 use App\Http\Controllers\Api\Admin\TokenController as AdminTokenController;
@@ -71,6 +72,12 @@ Route::middleware('admin.session')->group(function () {
     Route::get('/admin-faqs.php', [AdminFaqController::class, 'index']);
     Route::post('/admin/faqs', [AdminFaqController::class, 'handle']);
     Route::post('/admin-faqs.php', [AdminFaqController::class, 'handle']);
+
+    // Contact Inquiries Management
+    Route::get('/admin/inquiries', [AdminInquiryController::class, 'index']);
+    Route::get('/admin-inquiries.php', [AdminInquiryController::class, 'index']);
+    Route::post('/admin/inquiries', [AdminInquiryController::class, 'handle']);
+    Route::post('/admin-inquiries.php', [AdminInquiryController::class, 'handle']);
 
     // Token Management
     Route::get('/admin/tokens', [AdminTokenController::class, 'index']);

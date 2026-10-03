@@ -6,14 +6,15 @@
   "scripts": {
     "dev": "vite",
     "dev:backend": "cd laravel-core && php artisan serve",
-    "build": "vite build && node scripts/copy-backend-to-dist.js",
+    "build": "node scripts/patch-html2canvas.js && vite build && node scripts/copy-backend-to-dist.js",
+    "postinstall": "node scripts/patch-html2canvas.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.12",
     "framer-motion": "^12.23.12",
-    "html2canvas": "^1.4.1",
+    "html2canvas-pro": "^2.5.0",
     "html2pdf.js": "^0.14.0",
     "jspdf": "^4.2.1",
     "lenis": "^1.3.25",

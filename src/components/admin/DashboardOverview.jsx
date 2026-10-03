@@ -8,18 +8,22 @@ import {
     ArrowUpRight, 
     FileText, 
     RefreshCw,
-    Sparkles
+    Sparkles,
+    Mail,
+    Clock,
+    CheckCircle2,
+    MessageSquare,
+    ExternalLink
 } from 'lucide-react';
 
 export const DashboardOverview = ({ onNavigate, onUnauthorized }) => {
     const [stats, setStats] = useState(null);
     const [recentProjects, setRecentProjects] = useState([]);
+    const [recentInquiries, setRecentInquiries] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
 
     const loadStats = async (isManual = false) => {
         setIsLoading(true);
-        setError(null);
         try {
             const res = await fetch('/api/admin-stats.php', {
                 credentials: 'include'
@@ -30,7 +34,6 @@ export const DashboardOverview = ({ onNavigate, onUnauthorized }) => {
                     onUnauthorized();
                     return;
                 }
-                setError('Authentication expired. Please log in again.');
                 return;
             }
 
@@ -38,15 +41,14 @@ export const DashboardOverview = ({ onNavigate, onUnauthorized }) => {
             if (res.ok && data.success) {
                 setStats(data.stats);
                 setRecentProjects(data.recent_projects || []);
+                setRecentInquiries(data.recent_inquiries || []);
                 if (isManual) {
                     toast.success('Dashboard metrics refreshed!');
                 }
             } else {
-                setError(data.message || 'Unable to load statistics.');
                 if (isManual) toast.error('Failed to refresh stats.');
             }
-        } catch (err) {
-            setError('Could not connect to stats API.');
+        } catch {
             if (isManual) toast.error('Connection error.');
         } finally {
             setIsLoading(false);
@@ -58,6 +60,18 @@ export const DashboardOverview = ({ onNavigate, onUnauthorized }) => {
     }, []);
 
     const kpis = [
+        {
+            title: 'Contact Inquiries',
+            value: stats ? stats.total_inquiries : '-',
+            subtitle: stats?.pending_inquiries > 0
+                ? `${stats.pending_inquiries} awaiting response`
+                : 'All answered',
+            icon: Mail,
+            color: 'from-amber-500 to-orange-600',
+            badge: stats?.pending_inquiries > 0 ? `${stats.pending_inquiries} pending` : null,
+            action: () => onNavigate('inquiries'),
+            actionLabel: 'View Inquiries'
+        },
         {
             title: 'Total Projects',
             value: stats ? stats.total_projects : '-',
@@ -111,7 +125,7 @@ export const DashboardOverview = ({ onNavigate, onUnauthorized }) => {
                         Welcome to Solar Edge Control Panel
                     </h1>
                     <p className="text-xs sm:text-sm text-neutral-300 max-w-2xl">
-                        Manage your live website projects, dynamic photo gallery, customer FAQs, and quotations directly with your Hostinger PHP backend.
+                        Manage website inquiries, customer leads, live projects, photo gallery, FAQs, and quotations.
                     </p>
                 </div>
 
@@ -125,17 +139,17 @@ export const DashboardOverview = ({ onNavigate, onUnauthorized }) => {
                         <span>Refresh</span>
                     </button>
                     <button
-                        onClick={() => onNavigate('projects')}
+                        onClick={() => onNavigate('inquiries')}
                         className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#F4A261] hover:bg-[#e7924d] text-neutral-950 text-xs font-extrabold transition-all shadow-md cursor-pointer"
                     >
-                        <PlusCircle size={14} />
-                        <span>Add Project</span>
+                        <Mail size={14} />
+                        <span>View Inquiries</span>
                     </button>
                 </div>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                 {kpis.map((kpi, idx) => {
                     const Icon = kpi.icon;
                     return (
@@ -145,18 +159,20 @@ export const DashboardOverview = ({ onNavigate, onUnauthorized }) => {
                         >
                             <div className="flex items-start justify-between">
                                 <div className="space-y-1">
-                                    <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
-                                        {kpi.title}
-                                    </span>
-                                    <div className="text-3xl font-black text-neutral-900 tracking-tight">
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+                                            {kpi.title}
+                                        </span>
+                                    </div>
+                                    <div className="text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight font-mono">
                                         {isLoading ? '...' : kpi.value}
                                     </div>
-                                    <p className="text-xs text-neutral-400 font-medium">
+                                    <p className="text-[11px] text-neutral-400 font-medium">
                                         {kpi.subtitle}
                                     </p>
                                 </div>
-                                <div className={`w-12 h-12 rounded-xl bg-gradient-to-tr ${kpi.color} text-white flex items-center justify-center shadow-sm shrink-0`}>
-                                    <Icon size={22} />
+                                <div className={`w-11 h-11 rounded-xl bg-gradient-to-tr ${kpi.color} text-white flex items-center justify-center shadow-xs shrink-0`}>
+                                    <Icon size={20} />
                                 </div>
                             </div>
 
@@ -172,75 +188,158 @@ export const DashboardOverview = ({ onNavigate, onUnauthorized }) => {
                 })}
             </div>
 
-            {/* Quick Actions & Recent Projects Grid */}
+            {/* Main Content Grid: Inquiries & Projects & Modules */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Recent Projects List (2 cols) */}
-                <div className="lg:col-span-2 bg-white rounded-3xl p-6 border border-neutral-200/80 shadow-xs space-y-4">
-                    <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
-                        <div>
-                            <h2 className="text-base font-black text-neutral-900">Recent Projects in Showcase</h2>
-                            <p className="text-xs text-neutral-500">Live projects published on the website</p>
-                        </div>
-                        <button
-                            onClick={() => onNavigate('projects')}
-                            className="text-xs font-bold text-[#1A4D2E] hover:underline cursor-pointer"
-                        >
-                            View All Projects →
-                        </button>
-                    </div>
-
-                    {isLoading ? (
-                        <div className="py-12 text-center text-xs text-neutral-400">Loading projects...</div>
-                    ) : recentProjects.length === 0 ? (
-                        <div className="py-12 text-center space-y-3">
-                            <FolderGit2 className="w-10 h-10 text-neutral-300 mx-auto" />
-                            <p className="text-xs text-neutral-500 font-medium">No projects added yet.</p>
+                {/* Recent Inquiries Section (2 cols) */}
+                <div className="lg:col-span-2 space-y-6">
+                    {/* Recent Contact Inquiries */}
+                    <div className="bg-white rounded-3xl p-6 border border-neutral-200/80 shadow-xs space-y-4">
+                        <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+                                    <Mail size={18} />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h2 className="text-base font-black text-neutral-900">Recent Contact Inquiries</h2>
+                                        {stats?.pending_inquiries > 0 && (
+                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                                {stats.pending_inquiries} pending
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-neutral-500">Messages submitted through website contact form</p>
+                                </div>
+                            </div>
                             <button
-                                onClick={() => onNavigate('projects')}
-                                className="px-4 py-2 bg-[#1A4D2E] text-white rounded-xl text-xs font-bold shadow-xs hover:bg-[#153e24] cursor-pointer"
+                                onClick={() => onNavigate('inquiries')}
+                                className="text-xs font-bold text-[#1A4D2E] hover:underline cursor-pointer"
                             >
-                                Add Your First Project
+                                All Inquiries →
                             </button>
                         </div>
-                    ) : (
-                        <div className="divide-y divide-neutral-100">
-                            {recentProjects.map((proj) => (
-                                <div key={proj.id} className="py-3.5 flex items-center justify-between gap-4">
-                                    <div className="flex items-center gap-3 min-w-0">
-                                        <div className="w-12 h-12 rounded-xl bg-neutral-100 overflow-hidden shrink-0 border border-neutral-200">
-                                            {proj.cover_image ? (
-                                                <img src={proj.cover_image} alt={proj.title} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-neutral-400">
-                                                    <ImageIcon size={18} />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="min-w-0">
-                                            <h3 className="text-xs font-bold text-neutral-900 truncate">
-                                                {proj.title}
-                                            </h3>
-                                            <div className="flex items-center gap-2 mt-0.5">
-                                                <span className="text-[10px] px-2 py-0.5 rounded-md bg-neutral-100 text-neutral-600 font-medium">
-                                                    {proj.category || 'Solar'}
+
+                        {isLoading ? (
+                            <div className="py-8 text-center text-xs text-neutral-400">Loading inquiries...</div>
+                        ) : recentInquiries.length === 0 ? (
+                            <div className="py-8 text-center space-y-2">
+                                <Mail className="w-8 h-8 text-neutral-300 mx-auto" />
+                                <p className="text-xs text-neutral-500 font-medium">No contact inquiries yet.</p>
+                            </div>
+                        ) : (
+                            <div className="divide-y divide-neutral-100">
+                                {recentInquiries.map((inquiry) => (
+                                    <div
+                                        key={inquiry.id}
+                                        onClick={() => onNavigate('inquiries')}
+                                        className="py-3 flex items-center justify-between gap-3 hover:bg-neutral-50 rounded-xl px-2 transition-colors cursor-pointer group"
+                                    >
+                                        <div className="min-w-0 space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs font-bold text-neutral-900 group-hover:text-[#1A4D2E]">
+                                                    {inquiry.name}
                                                 </span>
-                                                <span className={`text-[10px] font-semibold ${proj.is_active ? 'text-emerald-600' : 'text-neutral-400'}`}>
-                                                    {proj.is_active ? '● Live' : '○ Draft'}
-                                                </span>
+                                                {inquiry.is_responded ? (
+                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                                        <CheckCircle2 size={10} /> Responded
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                                                        <Clock size={10} /> Pending
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="text-[11px] text-neutral-500 truncate max-w-md">
+                                                <span className="font-semibold text-neutral-700">{inquiry.service}</span> • {inquiry.place}, {inquiry.district}
+                                            </div>
+                                            <div className="text-[10px] text-neutral-400">
+                                                {inquiry.created_at_human}
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <button
-                                        onClick={() => onNavigate('projects')}
-                                        className="px-3 py-1.5 rounded-lg border border-neutral-200 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors shrink-0 cursor-pointer"
-                                    >
-                                        Edit
-                                    </button>
-                                </div>
-                            ))}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onNavigate('inquiries');
+                                            }}
+                                            className="px-3 py-1.5 rounded-lg border border-neutral-200 text-xs font-semibold text-neutral-700 hover:bg-[#1A4D2E] hover:text-white hover:border-[#1A4D2E] transition-all shrink-0 cursor-pointer"
+                                        >
+                                            View
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Recent Projects List */}
+                    <div className="bg-white rounded-3xl p-6 border border-neutral-200/80 shadow-xs space-y-4">
+                        <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
+                            <div>
+                                <h2 className="text-base font-black text-neutral-900">Recent Projects in Showcase</h2>
+                                <p className="text-xs text-neutral-500">Live projects published on the website</p>
+                            </div>
+                            <button
+                                onClick={() => onNavigate('projects')}
+                                className="text-xs font-bold text-[#1A4D2E] hover:underline cursor-pointer"
+                            >
+                                View All Projects →
+                            </button>
                         </div>
-                    )}
+
+                        {isLoading ? (
+                            <div className="py-8 text-center text-xs text-neutral-400">Loading projects...</div>
+                        ) : recentProjects.length === 0 ? (
+                            <div className="py-8 text-center space-y-3">
+                                <FolderGit2 className="w-8 h-8 text-neutral-300 mx-auto" />
+                                <p className="text-xs text-neutral-500 font-medium">No projects added yet.</p>
+                                <button
+                                    onClick={() => onNavigate('projects')}
+                                    className="px-4 py-2 bg-[#1A4D2E] text-white rounded-xl text-xs font-bold shadow-xs hover:bg-[#153e24] cursor-pointer"
+                                >
+                                    Add Your First Project
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="divide-y divide-neutral-100">
+                                {recentProjects.map((proj) => (
+                                    <div key={proj.id} className="py-3 flex items-center justify-between gap-4">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="w-10 h-10 rounded-xl bg-neutral-100 overflow-hidden shrink-0 border border-neutral-200">
+                                                {proj.cover_image ? (
+                                                    <img src={proj.cover_image} alt={proj.title} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-neutral-400">
+                                                        <ImageIcon size={16} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <h3 className="text-xs font-bold text-neutral-900 truncate">
+                                                    {proj.title}
+                                                </h3>
+                                                <div className="flex items-center gap-2 mt-0.5">
+                                                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-neutral-100 text-neutral-600 font-medium">
+                                                        {proj.category || 'Solar'}
+                                                    </span>
+                                                    <span className={`text-[10px] font-semibold ${proj.is_active ? 'text-emerald-600' : 'text-neutral-400'}`}>
+                                                        {proj.is_active ? '● Live' : '○ Draft'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() => onNavigate('projects')}
+                                            className="px-3 py-1.5 rounded-lg border border-neutral-200 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors shrink-0 cursor-pointer"
+                                        >
+                                            Edit
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* System & Quick Nav Panel (1 col) */}
@@ -249,6 +348,31 @@ export const DashboardOverview = ({ onNavigate, onUnauthorized }) => {
                     <div className="bg-white rounded-3xl p-6 border border-neutral-200/80 shadow-xs space-y-4">
                         <h2 className="text-base font-black text-neutral-900">Admin Modules</h2>
                         <div className="space-y-2">
+                            <button
+                                onClick={() => onNavigate('inquiries')}
+                                className="w-full p-3 rounded-2xl border border-neutral-200/80 hover:border-amber-400 hover:bg-amber-50/40 text-left transition-all flex items-center justify-between cursor-pointer group"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
+                                        <Mail size={17} />
+                                    </div>
+                                    <div>
+                                        <div className="text-xs font-bold text-neutral-900 group-hover:text-amber-800 flex items-center gap-1.5">
+                                            <span>Contact Inquiries</span>
+                                            {stats?.pending_inquiries > 0 && (
+                                                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                                            )}
+                                        </div>
+                                        <div className="text-[10px] text-neutral-400">
+                                            {stats?.pending_inquiries > 0
+                                                ? `${stats.pending_inquiries} waiting for reply`
+                                                : 'View customer messages'}
+                                        </div>
+                                    </div>
+                                </div>
+                                <ArrowUpRight size={14} className="text-neutral-400 group-hover:text-amber-800" />
+                            </button>
+
                             <button
                                 onClick={() => onNavigate('projects')}
                                 className="w-full p-3 rounded-2xl border border-neutral-200/80 hover:border-[#1A4D2E] hover:bg-emerald-50/40 text-left transition-all flex items-center justify-between cursor-pointer group"

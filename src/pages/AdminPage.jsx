@@ -4,6 +4,7 @@ import { DashboardOverview } from '../components/admin/DashboardOverview';
 import { ProjectGalleryManager } from '../components/admin/ProjectGalleryManager';
 import { FaqManager } from '../components/admin/FaqManager';
 import { QuotationEditor } from '../components/admin/QuotationEditor';
+import { InquiryManager } from '../components/admin/InquiryManager';
 import { Toaster, toast } from 'react-hot-toast';
 import {
     LayoutDashboard,
@@ -15,6 +16,7 @@ import {
     User,
     Sparkles,
     AlertTriangle,
+    Mail,
     X
 } from 'lucide-react';
 import { assets } from '../assets/assets';
@@ -26,6 +28,30 @@ const AdminPage = () => {
 
     const [activeTab, setActiveTab] = useState('dashboard');
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+    const [pendingInquiriesCount, setPendingInquiriesCount] = useState(0);
+
+    // Fetch pending count periodically or on mount / tab change
+    const fetchInquiriesBadge = async () => {
+        try {
+            const res = await fetch('/api/admin-inquiries.php?status=pending', {
+                credentials: 'include'
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.counts) {
+                    setPendingInquiriesCount(data.counts.pending || 0);
+                }
+            }
+        } catch {
+            // Ignore background badge fetch errors
+        }
+    };
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            fetchInquiriesBadge();
+        }
+    }, [isAuthenticated, activeTab]);
 
     // Verify HttpOnly cookie / PHP session with server on initial mount
     useEffect(() => {
@@ -143,6 +169,12 @@ const AdminPage = () => {
 
     const navigationItems = [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        {
+            id: 'inquiries',
+            label: 'Contact Inquiries',
+            icon: Mail,
+            badge: pendingInquiriesCount > 0 ? pendingInquiriesCount : null,
+        },
         { id: 'projects', label: 'Projects & Gallery', icon: FolderGit2 },
         { id: 'faqs', label: 'Website FAQs', icon: HelpCircle },
         { id: 'quotation', label: 'Quotation Builder', icon: FileText },
@@ -212,6 +244,17 @@ const AdminPage = () => {
                             >
                                 <Icon size={14} />
                                 <span>{item.label}</span>
+                                {item.badge != null && (
+                                    <span
+                                        className={`px-1.5 py-0.5 rounded-full text-[10px] font-black leading-none ${
+                                            isActive
+                                                ? 'bg-amber-400 text-neutral-950 font-mono shadow-xs'
+                                                : 'bg-amber-500 text-white font-mono'
+                                        }`}
+                                    >
+                                        {item.badge}
+                                    </span>
+                                )}
                             </button>
                         );
                     })}
@@ -254,6 +297,7 @@ const AdminPage = () => {
             {/* Main Content Area */}
             <main className="flex-1 pb-12">
                 {activeTab === 'dashboard' && <DashboardOverview onNavigate={setActiveTab} onUnauthorized={handleUnauthorized} />}
+                {activeTab === 'inquiries' && <InquiryManager onUnauthorized={handleUnauthorized} />}
                 {activeTab === 'projects' && <ProjectGalleryManager onUnauthorized={handleUnauthorized} />}
                 {activeTab === 'faqs' && <FaqManager onUnauthorized={handleUnauthorized} />}
                 {activeTab === 'quotation' && <QuotationEditor onLogout={() => setIsLogoutModalOpen(true)} />}

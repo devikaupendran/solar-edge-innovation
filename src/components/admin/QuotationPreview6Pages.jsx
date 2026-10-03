@@ -4,23 +4,63 @@ import { QuotationFooter } from './QuotationFooter';
 import { assets } from '../../assets/assets';
 
 export const QuotationPreview6Pages = ({ data }) => {
+    // 1. Chunk Manufacturers (First page shows exactly 10 items; any additional items move to new page)
+    const FIRST_PAGE_MFG = 10;
+    const NEXT_PAGE_MFG = 10;
+    const manufacturerChunks = [];
+    const allManufacturers = data.manufacturers || [];
+    if (allManufacturers.length === 0) {
+        manufacturerChunks.push([]);
+    } else if (allManufacturers.length <= FIRST_PAGE_MFG) {
+        manufacturerChunks.push(allManufacturers);
+    } else {
+        manufacturerChunks.push(allManufacturers.slice(0, FIRST_PAGE_MFG));
+        for (let i = FIRST_PAGE_MFG; i < allManufacturers.length; i += NEXT_PAGE_MFG) {
+            manufacturerChunks.push(allManufacturers.slice(i, i + NEXT_PAGE_MFG));
+        }
+    }
+
+    // 2. Chunk Permit Fees (Max 4 on first pricing page with Roof Type table, 6 on continuation pages)
+    const permitFees = data.permitFees || [];
+    const permitFeeChunks = [];
+    if (permitFees.length <= 4) {
+        permitFeeChunks.push(permitFees);
+    } else {
+        permitFeeChunks.push(permitFees.slice(0, 4));
+        for (let i = 4; i < permitFees.length; i += 6) {
+            permitFeeChunks.push(permitFees.slice(i, i + 6));
+        }
+    }
+
+    // 3. Chunk Terms & Conditions (Max 14 per page)
+    const terms = data.termsAndConditions || [];
+    const TERMS_PER_PAGE = 14;
+    const termsChunks = [];
+    if (terms.length <= TERMS_PER_PAGE) {
+        termsChunks.push(terms);
+    } else {
+        for (let i = 0; i < terms.length; i += TERMS_PER_PAGE) {
+            termsChunks.push(terms.slice(i, i + TERMS_PER_PAGE));
+        }
+    }
+
     return (
         <div className="quotation-preview-container w-full flex flex-col items-center gap-8 py-4 font-sans bg-neutral-200/60 print:bg-white print:p-0 print:gap-0" data-lenis-prevent>
             {/* ════════════════════════════════════════════════════════════
                 PAGE 1: COVER PAGE
             ════════════════════════════════════════════════════════════ */}
-            <div className="quotation-page w-[210mm] min-h-[297mm] h-[297mm] bg-white shadow-xl print:shadow-none flex flex-col justify-between relative overflow-hidden box-border page-break-after-always">
+            <div data-section="client" id="preview-page-client" className="quotation-page w-[210mm] min-h-[297mm] h-[297mm] bg-white shadow-xl print:shadow-none flex flex-col justify-between relative overflow-hidden box-border page-break-after-always">
                 <QuotationHeader refNo={data.refNo} date={data.date} />
 
                 {/* Page Content */}
-                <div className="px-12 flex-1 flex flex-col items-center justify-center text-center space-y-10 my-auto relative z-10">
+                <div className="px-12 py-10 flex-1 flex flex-col items-center justify-center text-center relative z-10 gap-10">
                     {/* Background Sun Logo Watermark Overlay */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-[0.04] pointer-events-none select-none z-0">
                         <img src={assets.logo} alt="Watermark" className="w-[420px] h-[420px] object-contain" />
                     </div>
 
                     {/* Main Title Banner */}
-                    <div className="space-y-3 z-10">
+                    <div className="flex flex-col items-center gap-3 z-10 mb-4">
                         <h1 className="text-4xl font-extrabold tracking-tight text-[#0D4379] font-sans uppercase">
                             {data.systemTitle || "SOLAR POWERPLANT"}
                         </h1>
@@ -28,26 +68,26 @@ export const QuotationPreview6Pages = ({ data }) => {
                             <p className="text-xl font-medium tracking-[0.2em] text-[#1D63A4] uppercase">
                                 {data.systemSubtitle || "Grid Tie System"}
                             </p>
-                            <span className="block w-24 h-0.5 bg-[#4084C5] mx-auto mt-2" />
+                            <span className="block w-28 h-0.5 bg-[#4084C5] mx-auto mt-2" />
                         </div>
                     </div>
 
                     {/* Client Name Box */}
-                    <div className="w-full max-w-lg bg-[#F0F6FC] border border-[#CADDF2] rounded-xl p-6 text-center shadow-2xs z-10 space-y-2">
+                    <div className="quotation-cover-client-box w-full max-w-xl bg-[#F0F6FC] border border-[#CADDF2] rounded-2xl py-6 px-8 text-center z-10 flex flex-col items-center gap-2">
                         <p className="text-xs font-bold tracking-[0.25em] text-[#0D4379] uppercase">
                             CLIENT NAME
                         </p>
-                        <p className="text-lg font-extrabold text-[#154675] tracking-wide uppercase">
+                        <p className="text-2xl font-extrabold text-[#154675] tracking-wide uppercase">
                             {data.clientInfo.name || "CLIENT NAME"}
                         </p>
                     </div>
 
                     {/* System Capacity Box */}
-                    <div className="w-full max-w-lg bg-[#F0F6FC] border border-[#CADDF2] rounded-xl p-6 text-center shadow-2xs z-10 space-y-2">
+                    <div className="quotation-cover-capacity-box w-full max-w-xl bg-[#F0F6FC] border border-[#CADDF2] rounded-2xl py-6 px-8 text-center z-10 flex flex-col items-center gap-2">
                         <p className="text-xs font-bold tracking-[0.25em] text-[#0D4379] uppercase">
                             SYSTEM CAPACITY
                         </p>
-                        <p className="text-lg font-extrabold text-[#154675] tracking-wide uppercase">
+                        <p className="text-2xl font-extrabold text-[#154675] tracking-wide uppercase">
                             {data.clientInfo.capacity || "SYSTEM CAPACITY"}
                         </p>
                     </div>
@@ -59,17 +99,17 @@ export const QuotationPreview6Pages = ({ data }) => {
             {/* ════════════════════════════════════════════════════════════
                 PAGE 2: SOLAR GENERATION TECHNOLOGY
             ════════════════════════════════════════════════════════════ */}
-            <div className="quotation-page w-[210mm] min-h-[297mm] h-[297mm] bg-white shadow-xl print:shadow-none flex flex-col justify-between relative overflow-hidden box-border page-break-after-always">
+            <div data-section="client" className="quotation-page w-[210mm] min-h-[297mm] h-[297mm] bg-white shadow-xl print:shadow-none flex flex-col justify-between relative overflow-hidden box-border page-break-after-always">
                 <QuotationHeader />
 
-                <div className="px-10 py-4 flex-1 flex flex-col space-y-5 text-neutral-800 text-[11.5px] leading-relaxed relative z-10">
+                <div className="px-10 py-4 flex-1 flex flex-col gap-5 text-neutral-800 text-[11.5px] leading-relaxed relative z-10">
                     {/* Page Heading */}
                     <h2 className="text-xl font-extrabold text-[#0D4379] text-center tracking-wide uppercase mb-2">
                         SOLAR GENERATION TECHNOLOGY
                     </h2>
 
                     {/* Section 1 */}
-                    <div className="space-y-1.5">
+                    <div className="flex flex-col gap-1.5">
                         <h3 className="font-bold text-xs text-[#0D4379]">
                             About Solar Generation Technology
                         </h3>
@@ -79,7 +119,7 @@ export const QuotationPreview6Pages = ({ data }) => {
                     </div>
 
                     {/* Section 2 */}
-                    <div className="space-y-2.5">
+                    <div className="flex flex-col gap-2.5">
                         <h3 className="font-bold text-xs text-[#0D4379]">
                             Generation of power from Solar Energy
                         </h3>
@@ -118,87 +158,99 @@ export const QuotationPreview6Pages = ({ data }) => {
             </div>
 
             {/* ════════════════════════════════════════════════════════════
-                PAGE 3: PROPOSED MANUFACTURERS
+                PAGE 3: PROPOSED MANUFACTURERS (Auto-paginated)
             ════════════════════════════════════════════════════════════ */}
-            <div className="quotation-page w-[210mm] min-h-[297mm] h-[297mm] bg-white shadow-xl print:shadow-none flex flex-col justify-between relative overflow-hidden box-border page-break-after-always">
-                <QuotationHeader />
+            {manufacturerChunks.map((chunk, chunkIdx) => (
+                <div
+                    key={`mfg-page-${chunkIdx}`}
+                    data-section="manufacturers"
+                    id={chunkIdx === 0 ? "preview-page-manufacturers" : undefined}
+                    className="quotation-page w-[210mm] min-h-[297mm] h-[297mm] bg-white shadow-xl print:shadow-none flex flex-col justify-between relative overflow-hidden box-border page-break-after-always"
+                >
+                    <QuotationHeader />
 
-                <div className="px-10 py-4 flex-1 flex flex-col relative z-10">
-                    <h2 className="text-xl font-extrabold text-[#0D4379] text-center tracking-wide uppercase mb-6">
-                        LIST OF PROPOSED MANUFACTURERS
-                    </h2>
+                    <div className="px-10 py-4 flex-1 flex flex-col relative z-10">
+                        <h2 className="text-xl font-extrabold text-[#0D4379] text-center tracking-wide uppercase mb-4">
+                            LIST OF PROPOSED MANUFACTURERS {manufacturerChunks.length > 1 ? `(PART ${chunkIdx + 1})` : ''}
+                        </h2>
 
-                    {/* Manufacturers Styled Table */}
-                    <div className="w-full border border-[#7AAAD8] rounded-xl overflow-hidden shadow-xs">
-                        <table className="w-full text-left border-collapse text-[11px]">
-                            <thead>
-                                <tr className="bg-[#134D8B] text-white text-xs font-bold uppercase tracking-wider">
-                                    <th className="py-3 px-3 text-center border-r border-blue-400/40 w-16">SL NO</th>
-                                    <th className="py-3 px-4 border-r border-blue-400/40">ITEM</th>
-                                    <th className="py-3 px-4 text-center border-r border-blue-400/40">MANUFACTURER</th>
-                                    <th className="py-3 px-4 text-center w-36">COUNTRY OF ORIGIN</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-[#BED6EE] text-neutral-800">
-                                {data.manufacturers && data.manufacturers.map((row, idx) => (
-                                    <tr key={row.id || idx} className={idx % 2 === 0 ? "bg-white" : "bg-[#F4F9FF]"}>
-                                        <td className="py-3 px-3 text-center font-bold text-[#0D4379] border-r border-[#BED6EE]">
-                                            {idx + 1}
-                                        </td>
-                                        <td className="py-3 px-4 font-bold text-[#144778] border-r border-[#BED6EE] leading-snug">
-                                            {row.item}
-                                        </td>
-                                        <td className="py-3 px-4 text-center font-extrabold text-[#0D4379] uppercase border-r border-[#BED6EE]">
-                                            {row.manufacturer}
-                                        </td>
-                                        <td className="py-3 px-4 text-center font-bold text-[#0D4379]">
-                                            {row.origin}
-                                        </td>
+                        {/* Manufacturers Styled Table */}
+                        <div className="w-full border border-[#7AAAD8] rounded-xl overflow-hidden">
+                            <table className="w-full text-left border-collapse text-[11px]">
+                                <thead>
+                                    <tr className="bg-[#134D8B] text-white text-xs font-bold uppercase tracking-wider">
+                                        <th className="py-2.5 px-3 text-center border-r border-blue-400/40 w-16 whitespace-nowrap">SL NO</th>
+                                        <th className="py-2.5 px-4 border-r border-blue-400/40">ITEM</th>
+                                        <th className="py-2.5 px-4 text-center border-r border-blue-400/40">MANUFACTURER</th>
+                                        <th className="py-2.5 px-4 text-center w-36">COUNTRY OF ORIGIN</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-[#BED6EE] text-neutral-800">
+                                    {chunk.map((row, idx) => {
+                                        const globalIndex = chunkIdx === 0 
+                                            ? idx + 1 
+                                            : FIRST_PAGE_MFG + (chunkIdx - 1) * NEXT_PAGE_MFG + idx + 1;
+                                        return (
+                                            <tr key={row.id || globalIndex} className={idx % 2 === 0 ? "bg-white" : "bg-[#F4F9FF]"}>
+                                                <td className="py-2.5 px-3 text-center font-bold text-[#0D4379] border-r border-[#BED6EE]">
+                                                    {globalIndex}
+                                                </td>
+                                                <td className="py-2.5 px-4 font-bold text-[#144778] border-r border-[#BED6EE] leading-snug">
+                                                    {row.item}
+                                                </td>
+                                                <td className="py-2.5 px-4 text-center font-extrabold text-[#0D4379] uppercase border-r border-[#BED6EE]">
+                                                    {row.manufacturer}
+                                                </td>
+                                                <td className="py-2.5 px-4 text-center font-bold text-[#0D4379]">
+                                                    {row.origin}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
 
-                <QuotationFooter />
-            </div>
+                    <QuotationFooter />
+                </div>
+            ))}
 
             {/* ════════════════════════════════════════════════════════════
                 PAGE 4: CLIENT INFO & TECHNICAL DETAILS
             ════════════════════════════════════════════════════════════ */}
-            <div className="quotation-page w-[210mm] min-h-[297mm] h-[297mm] bg-white shadow-xl print:shadow-none flex flex-col justify-between relative overflow-hidden box-border page-break-after-always">
+            <div data-section="technical" id="preview-page-technical" className="quotation-page w-[210mm] min-h-[297mm] h-[297mm] bg-white shadow-xl print:shadow-none flex flex-col justify-between relative overflow-hidden box-border page-break-after-always">
                 <QuotationHeader />
 
-                <div className="px-10 py-4 flex-1 flex flex-col space-y-6 relative z-10">
+                <div className="px-10 py-6 flex-1 flex flex-col gap-6 relative z-10">
                     {/* Section 1: Client Information */}
                     <div>
-                        <h2 className="text-xl font-extrabold text-[#0D4379] text-center tracking-wide uppercase mb-4">
+                        <h2 className="text-xl font-extrabold text-[#0D4379] text-center tracking-wide uppercase mb-3">
                             CLIENT INFORMATION
                         </h2>
 
-                        <div className="w-full border border-[#7AAAD8] rounded-xl overflow-hidden shadow-xs text-xs">
+                        <div className="w-full border border-[#7AAAD8] rounded-xl overflow-hidden text-xs">
                             <table className="w-full text-left border-collapse">
                                 <tbody className="divide-y divide-[#BED6EE]">
                                     <tr className="bg-[#EEF6FE]">
-                                        <td className="py-2.5 px-6 font-bold text-[#0D4379] w-1/3 border-r border-[#BED6EE]">Client</td>
-                                        <td className="py-2.5 px-6 font-extrabold text-[#0D4379] uppercase">{data.clientInfo.name}</td>
+                                        <td className="py-3 px-6 font-bold text-[#0D4379] w-1/3 border-r border-[#BED6EE]">Client</td>
+                                        <td className="py-3 px-6 font-extrabold text-[#0D4379] uppercase">{data.clientInfo.name}</td>
                                     </tr>
                                     <tr className="bg-white">
-                                        <td className="py-2.5 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">Address</td>
-                                        <td className="py-2.5 px-6 font-extrabold text-[#0D4379] uppercase">{data.clientInfo.address}</td>
+                                        <td className="py-3 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">Address</td>
+                                        <td className="py-3 px-6 font-extrabold text-[#0D4379] uppercase">{data.clientInfo.address}</td>
                                     </tr>
                                     <tr className="bg-[#EEF6FE]">
-                                        <td className="py-2.5 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">Contact No</td>
-                                        <td className="py-2.5 px-6 font-extrabold text-[#0D4379]">{data.clientInfo.contactNo}</td>
+                                        <td className="py-3 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">Contact No</td>
+                                        <td className="py-3 px-6 font-extrabold text-[#0D4379]">{data.clientInfo.contactNo}</td>
                                     </tr>
                                     <tr className="bg-white">
-                                        <td className="py-2.5 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">Capacity</td>
-                                        <td className="py-2.5 px-6 font-extrabold text-[#0D4379]">{data.clientInfo.capacity}</td>
+                                        <td className="py-3 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">Capacity</td>
+                                        <td className="py-3 px-6 font-extrabold text-[#0D4379]">{data.clientInfo.capacity}</td>
                                     </tr>
                                     <tr className="bg-[#EEF6FE]">
-                                        <td className="py-2.5 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">Type</td>
-                                        <td className="py-2.5 px-6 font-extrabold text-[#0D4379] uppercase">{data.clientInfo.type}</td>
+                                        <td className="py-3 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">Type</td>
+                                        <td className="py-3 px-6 font-extrabold text-[#0D4379] uppercase">{data.clientInfo.type}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -207,51 +259,51 @@ export const QuotationPreview6Pages = ({ data }) => {
 
                     {/* Section 2: Technical Specifications */}
                     <div>
-                        <h2 className="text-xl font-extrabold text-[#0D4379] text-center tracking-wide uppercase mb-4">
+                        <h2 className="text-xl font-extrabold text-[#0D4379] text-center tracking-wide uppercase mb-3">
                             TECHNICAL
                         </h2>
 
                         {/* Solar PV Modules Table */}
-                        <div className="w-full border border-[#7AAAD8] rounded-xl overflow-hidden shadow-xs mb-4 text-xs">
-                            <div className="bg-[#134D8B] text-white py-2.5 px-4 font-bold text-center uppercase tracking-wider">
+                        <div className="w-full border border-[#7AAAD8] rounded-xl overflow-hidden mb-4 text-xs">
+                            <div className="bg-[#134D8B] text-white py-2.5 px-4 font-bold text-center uppercase tracking-wider break-words">
                                 Solar PV Modules - {data.technicalSpecs.solarPvModules.brand}
                             </div>
                             <table className="w-full text-left border-collapse">
                                 <tbody className="divide-y divide-[#BED6EE]">
                                     <tr className="bg-[#EEF6FE]">
-                                        <td className="py-2.5 px-6 font-bold text-[#0D4379] w-1/3 border-r border-[#BED6EE]">Type / Model</td>
-                                        <td className="py-2.5 px-6 font-extrabold text-[#0D4379] uppercase leading-tight">{data.technicalSpecs.solarPvModules.model}</td>
+                                        <td className="py-3 px-6 font-bold text-[#0D4379] w-1/3 border-r border-[#BED6EE]">Type / Model</td>
+                                        <td className="py-3 px-6 font-extrabold text-[#0D4379] uppercase leading-tight">{data.technicalSpecs.solarPvModules.model}</td>
                                     </tr>
                                     <tr className="bg-white">
-                                        <td className="py-2.5 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">QTY</td>
-                                        <td className="py-2.5 px-6 font-extrabold text-[#0D4379]">{data.technicalSpecs.solarPvModules.qty}</td>
+                                        <td className="py-3 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">QTY</td>
+                                        <td className="py-3 px-6 font-extrabold text-[#0D4379]">{data.technicalSpecs.solarPvModules.qty}</td>
                                     </tr>
                                     <tr className="bg-[#EEF6FE]">
-                                        <td className="py-2.5 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">WARRANTY</td>
-                                        <td className="py-2.5 px-6 font-bold text-[#0D4379] leading-snug">{data.technicalSpecs.solarPvModules.warranty}</td>
+                                        <td className="py-3 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">WARRANTY</td>
+                                        <td className="py-3 px-6 font-bold text-[#0D4379] leading-snug">{data.technicalSpecs.solarPvModules.warranty}</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
 
                         {/* On Grid Inverter Table */}
-                        <div className="w-full border border-[#7AAAD8] rounded-xl overflow-hidden shadow-xs text-xs">
-                            <div className="bg-[#134D8B] text-white py-2.5 px-4 font-bold text-center uppercase tracking-wider">
+                        <div className="w-full border border-[#7AAAD8] rounded-xl overflow-hidden text-xs">
+                            <div className="bg-[#134D8B] text-white py-2.5 px-4 font-bold text-center uppercase tracking-wider break-words">
                                 ON GRID INVERTER - {data.technicalSpecs.inverter.brand}
                             </div>
                             <table className="w-full text-left border-collapse">
                                 <tbody className="divide-y divide-[#BED6EE]">
                                     <tr className="bg-[#EEF6FE]">
-                                        <td className="py-2.5 px-6 font-bold text-[#0D4379] w-1/3 border-r border-[#BED6EE]">QTY</td>
-                                        <td className="py-2.5 px-6 font-extrabold text-[#0D4379]">{data.technicalSpecs.inverter.qty}</td>
+                                        <td className="py-3 px-6 font-bold text-[#0D4379] w-1/3 border-r border-[#BED6EE]">QTY</td>
+                                        <td className="py-3 px-6 font-extrabold text-[#0D4379]">{data.technicalSpecs.inverter.qty}</td>
                                     </tr>
                                     <tr className="bg-white">
-                                        <td className="py-2.5 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">Warranty</td>
-                                        <td className="py-2.5 px-6 font-bold text-[#0D4379]">{data.technicalSpecs.inverter.warranty}</td>
+                                        <td className="py-3 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">Warranty</td>
+                                        <td className="py-3 px-6 font-bold text-[#0D4379]">{data.technicalSpecs.inverter.warranty}</td>
                                     </tr>
                                     <tr className="bg-[#EEF6FE]">
-                                        <td className="py-2.5 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">ADDITIONAL WORK</td>
-                                        <td className="py-2.5 px-6 font-extrabold text-[#0D4379]">{data.technicalSpecs.inverter.additionalWork}</td>
+                                        <td className="py-3 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">ADDITIONAL WORK</td>
+                                        <td className="py-3 px-6 font-extrabold text-[#0D4379]">{data.technicalSpecs.inverter.additionalWork}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -263,116 +315,129 @@ export const QuotationPreview6Pages = ({ data }) => {
             </div>
 
             {/* ════════════════════════════════════════════════════════════
-                PAGE 5: PRICING, KSEB PERMITS & WARRANTY
+                PAGE 5: PRICING, KSEB PERMITS & WARRANTY (Auto-paginated)
             ════════════════════════════════════════════════════════════ */}
-            <div className="quotation-page w-[210mm] min-h-[297mm] h-[297mm] bg-white shadow-xl print:shadow-none flex flex-col justify-between relative overflow-hidden box-border page-break-after-always">
-                <QuotationHeader />
+            {permitFeeChunks.map((feeChunk, chunkIdx) => (
+                <div
+                    key={`permit-page-${chunkIdx}`}
+                    data-section="pricing"
+                    id={chunkIdx === 0 ? "preview-page-pricing" : undefined}
+                    className="quotation-page w-[210mm] min-h-[297mm] h-[297mm] bg-white shadow-xl print:shadow-none flex flex-col justify-between relative overflow-hidden box-border page-break-after-always"
+                >
+                    <QuotationHeader />
 
-                <div className="px-10 py-4 flex-1 flex flex-col space-y-5 relative z-10">
-                    {/* Header System Banner */}
-                    <div className="bg-[#F0F4F8] border border-[#D0E2F3] rounded-2xl p-4 text-center">
-                        <h2 className="text-base font-extrabold text-[#0D4379] tracking-wide uppercase leading-tight">
-                            {data.pricing.headerTitle}
-                        </h2>
-                    </div>
+                    <div className="px-10 py-5 flex-1 flex flex-col gap-4 relative z-10">
+                        {chunkIdx === 0 && (
+                            <>
+                                {/* Header System Banner */}
+                                <div className="bg-[#F0F4F8] border border-[#D0E2F3] rounded-2xl p-4 text-center">
+                                    <h2 className="text-base font-extrabold text-[#0D4379] uppercase leading-tight break-words">
+                                        {data.pricing.headerTitle}
+                                    </h2>
+                                </div>
 
-                    {/* Table 1: Roof Type & Total Payable */}
-                    <div className="w-full border border-[#7AAAD8] rounded-xl overflow-hidden shadow-xs text-xs">
-                        <table className="w-full text-center border-collapse">
-                            <thead>
-                                <tr className="bg-[#134D8B] text-white font-bold uppercase tracking-wider">
-                                    <th className="py-2.5 px-4 w-1/2 border-r border-blue-400/40">ROOF TYPE</th>
-                                    <th className="py-2.5 px-4 w-1/2">TOTAL PROJECT PAYABLE</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr className="bg-[#F4F9FF]">
-                                    <td className="py-4 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">
-                                        {data.pricing.roofTypeLabel}
-                                    </td>
-                                    <td className="py-4 px-6 font-extrabold text-[#0D4379]">
-                                        <span className="text-xl block">{data.pricing.totalPayable}</span>
-                                        <span className="text-xs font-semibold text-neutral-600 block mt-0.5">{data.pricing.amountInWords}</span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                                {/* Table 1: Roof Type & Total Payable */}
+                                <div className="w-full border border-[#7AAAD8] rounded-xl overflow-hidden text-xs">
+                                    <table className="w-full text-center border-collapse">
+                                        <thead>
+                                            <tr className="bg-[#134D8B] text-white font-bold uppercase tracking-wider">
+                                                <th className="py-3 px-4 w-1/2 border-r border-blue-400/40">ROOF TYPE</th>
+                                                <th className="py-3 px-4 w-1/2">TOTAL PROJECT PAYABLE</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr className="bg-[#F4F9FF]">
+                                                <td className="py-4 px-6 font-bold text-[#0D4379] border-r border-[#BED6EE]">
+                                                    {data.pricing.roofTypeLabel}
+                                                </td>
+                                                <td className="py-4 px-6 font-extrabold text-[#0D4379]">
+                                                    <span className="text-xl block">{data.pricing.totalPayable}</span>
+                                                    <span className="text-xs font-semibold text-neutral-600 block mt-0.5">{data.pricing.amountInWords}</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </>
+                        )}
 
-                    {/* Table 2: KSEB Permits & Fees */}
-                    <div className="w-full border border-[#7AAAD8] rounded-xl overflow-hidden shadow-xs text-xs">
-                        <div className="bg-[#134D8B] text-white py-2.5 px-4 font-bold uppercase tracking-wider">
-                            OTHER FEES PAY TO OBTAIN PERMITS FROM KSEB
+                        {/* Table 2: KSEB Permits & Fees */}
+                        <div className="w-full border border-[#7AAAD8] rounded-xl overflow-hidden text-xs">
+                            <div className="bg-[#134D8B] text-white py-3 px-4 font-bold uppercase tracking-wider">
+                                OTHER FEES PAY TO OBTAIN PERMITS FROM KSEB {permitFeeChunks.length > 1 ? `(PART ${chunkIdx + 1})` : ''}
+                            </div>
+                            <table className="w-full text-left border-collapse">
+                                <tbody className="divide-y divide-[#BED6EE]">
+                                    {feeChunk.map((feeRow, idx) => (
+                                        <tr key={feeRow.id || idx} className={idx % 2 === 0 ? "bg-[#F4F9FF]" : "bg-white"}>
+                                            <td className="py-3 px-6 font-bold text-[#0D4379] w-1/2 border-r border-[#BED6EE]">
+                                                {feeRow.item}
+                                            </td>
+                                            <td className="py-3 px-6 font-extrabold text-[#0D4379] leading-snug">
+                                                {feeRow.fee}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
-                        <table className="w-full text-left border-collapse">
-                            <tbody className="divide-y divide-[#BED6EE]">
-                                {data.permitFees && data.permitFees.map((feeRow, idx) => (
-                                    <tr key={feeRow.id || idx} className={idx % 2 === 0 ? "bg-[#F4F9FF]" : "bg-white"}>
-                                        <td className="py-2.5 px-6 font-bold text-[#0D4379] w-1/2 border-r border-[#BED6EE]">
-                                            {feeRow.item}
-                                        </td>
-                                        <td className="py-2.5 px-6 font-extrabold text-[#0D4379] leading-snug">
-                                            {feeRow.fee}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+
+                        {/* If this is the last permit fee page, render Subsidy Note & Warranty */}
+                        {chunkIdx === permitFeeChunks.length - 1 && (
+                            <>
+                                <p className="text-xs text-[#0D4379] font-semibold leading-relaxed">
+                                    {data.subsidyNote}
+                                </p>
+
+                                <div className="pt-2">
+                                    <h3 className="text-base font-extrabold text-[#0D4379] tracking-wide uppercase border-b-2 border-[#134D8B] pb-1 inline-block mb-3">
+                                        WARRANTY
+                                    </h3>
+                                    <div className="flex flex-col gap-2 text-xs text-[#0D4379]">
+                                        <p className="font-bold">{data.warranties.panel}</p>
+                                        <p className="font-bold">{data.warranties.inverter}</p>
+                                        <p className="font-bold">{data.warranties.isolator}</p>
+                                        <p className="font-bold">{data.warranties.acdb}</p>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
 
-                    {/* Subsidy Note */}
-                    <p className="text-xs text-[#0D4379] font-semibold leading-relaxed">
-                        {data.subsidyNote}
-                    </p>
-
-                    {/* Section 3: Warranty */}
-                    <div className="pt-2">
-                        <h3 className="text-base font-extrabold text-[#0D4379] tracking-wide uppercase border-b-2 border-[#134D8B] pb-1 inline-block mb-3">
-                            WARRANTY
-                        </h3>
-                        <div className="space-y-2 text-xs text-[#0D4379]">
-                            <p className="font-bold">
-                                {data.warranties.panel}
-                            </p>
-                            <p className="font-bold">
-                                {data.warranties.inverter}
-                            </p>
-                            <p className="font-bold">
-                                {data.warranties.isolator}
-                            </p>
-                            <p className="font-bold">
-                                {data.warranties.acdb}
-                            </p>
-                        </div>
-                    </div>
+                    <QuotationFooter />
                 </div>
-
-                <QuotationFooter />
-            </div>
+            ))}
 
             {/* ════════════════════════════════════════════════════════════
-                PAGE 6: TERMS AND CONDITIONS
+                PAGE 6: TERMS AND CONDITIONS (Auto-paginated)
             ════════════════════════════════════════════════════════════ */}
-            <div className="quotation-page w-[210mm] min-h-[297mm] h-[297mm] bg-white shadow-xl print:shadow-none flex flex-col justify-between relative overflow-hidden box-border page-break-after-avoid">
-                <QuotationHeader />
+            {termsChunks.map((termsChunk, chunkIdx) => (
+                <div
+                    key={`terms-page-${chunkIdx}`}
+                    data-section="terms"
+                    id={chunkIdx === 0 ? "preview-page-terms" : undefined}
+                    className={`quotation-page w-[210mm] min-h-[297mm] h-[297mm] bg-white shadow-xl print:shadow-none flex flex-col justify-between relative overflow-hidden box-border ${chunkIdx === termsChunks.length - 1 ? 'page-break-after-avoid' : 'page-break-after-always'}`}
+                >
+                    <QuotationHeader />
 
-                <div className="px-10 py-4 flex-1 flex flex-col relative z-10">
-                    <h2 className="text-xl font-extrabold text-[#0D4379] text-center tracking-wide uppercase mb-4">
-                        TERMS AND CONDITIONS
-                    </h2>
+                    <div className="px-10 py-4 flex-1 flex flex-col relative z-10">
+                        <h2 className="text-xl font-extrabold text-[#0D4379] text-center tracking-wide uppercase mb-4">
+                            TERMS AND CONDITIONS {termsChunks.length > 1 ? `(PART ${chunkIdx + 1})` : ''}
+                        </h2>
 
-                    <div className="space-y-2.5 text-[11px] text-neutral-800 leading-relaxed">
-                        {data.termsAndConditions && data.termsAndConditions.map((term, idx) => (
-                            <p key={idx} className="text-justify">
-                                <strong className="text-[#0D4379] font-bold">{term.label}: </strong>
-                                <span className="text-neutral-700">{term.text}</span>
-                            </p>
-                        ))}
+                        <div className="flex flex-col gap-2.5 text-[11px] text-neutral-800 leading-relaxed">
+                            {termsChunk.map((term, idx) => (
+                                <p key={idx} className="text-justify">
+                                    <strong className="text-[#0D4379] font-bold">{term.label}: </strong>
+                                    <span className="text-neutral-700">{term.text}</span>
+                                </p>
+                            ))}
+                        </div>
                     </div>
-                </div>
 
-                <QuotationFooter />
-            </div>
+                    <QuotationFooter />
+                </div>
+            ))}
         </div>
     );
 };

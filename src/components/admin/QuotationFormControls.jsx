@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     Plus,
     Trash2,
@@ -11,7 +11,9 @@ import {
     DollarSign,
     Shield,
     Sliders,
-    LogOut
+    LogOut,
+    Loader2,
+    Download
 } from 'lucide-react';
 
 export const QuotationFormControls = ({
@@ -20,9 +22,31 @@ export const QuotationFormControls = ({
     onSave,
     onReset,
     onGeneratePdf,
-    onLogout
+    isGeneratingPdf = false,
+    pdfProgress = "",
+    onLogout,
+    activeTab: propActiveTab,
+    onTabChange
 }) => {
-    const [activeTab, setActiveTab] = useState('client');
+    const [localActiveTab, setLocalActiveTab] = useState('client');
+    const activeTab = propActiveTab !== undefined ? propActiveTab : localActiveTab;
+
+    const formScrollRef = useRef(null);
+
+    // Scroll form controls to top whenever active tab changes
+    useEffect(() => {
+        if (formScrollRef.current) {
+            formScrollRef.current.scrollTop = 0;
+        }
+    }, [activeTab]);
+
+    const handleSelectTab = (tabId) => {
+        if (onTabChange) {
+            onTabChange(tabId);
+        } else {
+            setLocalActiveTab(tabId);
+        }
+    };
 
     // Helper handler for deep state mutations
     const updateField = (path, value) => {
@@ -75,6 +99,11 @@ export const QuotationFormControls = ({
         onChange(newData);
     };
 
+    const mfgPageCount = Math.max(1, Math.ceil((data.manufacturers?.length || 0) / 10));
+    const permitFeePageCount = (data.permitFees && data.permitFees.length > 4) ? (1 + Math.ceil((data.permitFees.length - 4) / 6)) : 1;
+    const termsPageCount = (data.termsAndConditions && data.termsAndConditions.length > 14) ? Math.ceil(data.termsAndConditions.length / 14) : 1;
+    const totalPages = 3 + mfgPageCount + permitFeePageCount + termsPageCount;
+
     return (
         <div className="w-full h-full bg-white border-r border-neutral-200 flex flex-col font-sans overflow-hidden" data-lenis-prevent>
             {/* Top Editor Toolbar */}
@@ -84,7 +113,7 @@ export const QuotationFormControls = ({
                     <div>
                         <h2 className="text-sm font-bold leading-none">Quotation Builder</h2>
                         <span className="text-[10px] text-neutral-400 font-mono uppercase tracking-wider">
-                            6-Page Live Editor
+                            {totalPages}-Page Live Editor
                         </span>
                     </div>
                 </div>
@@ -100,11 +129,21 @@ export const QuotationFormControls = ({
                     </button>
                     <button
                         onClick={onGeneratePdf}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer"
-                        title="Generate and print 6-page PDF"
+                        disabled={isGeneratingPdf}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 ${isGeneratingPdf ? 'bg-blue-400 cursor-not-allowed opacity-80' : 'bg-blue-600 hover:bg-blue-500 cursor-pointer'} text-white rounded-lg text-xs font-bold transition-all shadow-xs`}
+                        title={isGeneratingPdf ? (pdfProgress || "Generating PDF document...") : `Generate and download ${totalPages}-page PDF`}
                     >
-                        <Printer className="w-3.5 h-3.5" />
-                        <span>PDF</span>
+                        {isGeneratingPdf ? (
+                            <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                <span>{pdfProgress || "Exporting..."}</span>
+                            </>
+                        ) : (
+                            <>
+                                <Download className="w-3.5 h-3.5" />
+                                <span>PDF</span>
+                            </>
+                        )}
                     </button>
                     <button
                         onClick={onReset}
@@ -137,12 +176,11 @@ export const QuotationFormControls = ({
                     return (
                         <button
                             key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                                isActive
-                                    ? 'bg-white text-emerald-800 shadow-xs border border-neutral-200/80'
-                                    : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-200/50'
-                            }`}
+                            onClick={() => handleSelectTab(tab.id)}
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${isActive
+                                ? 'bg-white text-emerald-800 shadow-xs border border-neutral-200/80'
+                                : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-200/50'
+                                }`}
                         >
                             <Icon className="w-3.5 h-3.5" />
                             <span>{tab.label}</span>
@@ -152,7 +190,7 @@ export const QuotationFormControls = ({
             </div>
 
             {/* Form Fields Area */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-6 text-xs text-neutral-700" data-lenis-prevent>
+            <div ref={formScrollRef} className="flex-1 overflow-y-auto p-5 space-y-6 text-xs text-neutral-700" data-lenis-prevent>
                 {/* ════════════════════════════════════════════════════════════
                     TAB 1: CLIENT & REFERENCE INFO
                 ════════════════════════════════════════════════════════════ */}
@@ -207,14 +245,23 @@ export const QuotationFormControls = ({
 
                         <hr className="border-neutral-200 my-4" />
 
-                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-blue-900 font-medium">
-                            <p className="font-bold">Client Information</p>
-                            <p className="text-[11px] text-blue-700 mt-0.5">Used on Page 1 cover cards and Page 4 table</p>
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-blue-900 font-medium flex items-center justify-between">
+                            <div>
+                                <p className="font-bold">Client Information</p>
+                                <p className="text-[11px] text-blue-700 mt-0.5">Used on Page 1 cover cards and Page 4 table</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => handleSelectTab('technical')}
+                                className="text-[11px] font-bold text-blue-700 hover:text-blue-950 underline cursor-pointer"
+                            >
+                                Technical Specs →
+                            </button>
                         </div>
 
                         <div className="space-y-3">
                             <div>
-                                <label className="block font-bold text-neutral-700 mb-1">Client Name</label>
+                                <label className="block font-bold text-neutral-700 mb-2">Client Name</label>
                                 <input
                                     type="text"
                                     value={data.clientInfo.name}
@@ -272,7 +319,7 @@ export const QuotationFormControls = ({
                         <div className="flex items-center justify-between bg-neutral-50 p-3 rounded-xl border border-neutral-200">
                             <div>
                                 <h3 className="font-bold text-neutral-800">Proposed Manufacturers List</h3>
-                                <p className="text-[11px] text-neutral-500">Renders on Page 3 table ({data.manufacturers.length} items)</p>
+                                <p className="text-[11px] text-neutral-500">Renders on Page 3 ({mfgPageCount} page{mfgPageCount > 1 ? 's' : ''}, {data.manufacturers.length} items)</p>
                             </div>
                             <button
                                 onClick={addManufacturer}
@@ -348,6 +395,20 @@ export const QuotationFormControls = ({
                 ════════════════════════════════════════════════════════════ */}
                 {activeTab === 'technical' && (
                     <div className="space-y-5">
+                        <div className="bg-sky-50 border border-sky-200 rounded-xl p-3 text-sky-900 font-medium flex items-center justify-between">
+                            <div>
+                                <p className="font-bold">Technical Specifications</p>
+                                <p className="text-[11px] text-sky-700 mt-0.5">Renders on Page 4 (below Client Information)</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => handleSelectTab('client')}
+                                className="text-[11px] font-bold text-sky-700 hover:text-sky-950 underline cursor-pointer"
+                            >
+                                Edit Client Info →
+                            </button>
+                        </div>
+
                         {/* Solar PV Modules */}
                         <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-xl space-y-3">
                             <h3 className="font-bold text-emerald-900 text-xs uppercase tracking-wider">Solar PV Modules</h3>
